@@ -1,0 +1,66 @@
+$image-path-prefix: '../build/images/' default;
+
+@import './ui/ui';
+
+
+// Settings
+
+$flow-mgr-width: 250px default;
+
+
+// Overiding styles for elements not specific to ContentFlow
+
+body {
+    @include transition-property(padding-right);
+    @include transition-duration(0.25s);
+    @include transition-timing-function(ease-out);
+
+    &.cf--flow-mgr-open {
+        padding-right: $draw-width;
+
+        @include transition-property(padding-right);
+        @include transition-duration(0.25s);
+        @include transition-timing-function(ease-in);
+
+        .ct-widget {
+            &.ct-ignition {
+                right: 378px;
+
+                @include transition-property(all);
+                @include transition-duration(0.25s);
+                @include transition-timing-function(ease-in);
+            }
+        }
+    }
+}
+
+.ct-widget {
+
+    // Override the position of the ignition switch
+    &.ct-ignition {
+        left: auto;
+        right: 128px;
+        top: 23px;
+
+        @include transition-property(all);
+        @include transition-duration(0.25s);
+        @include transition-timing-function(ease-out);
+    }
+}
+
+.cf--highlight-snippet {
+    position: relative;
+
+    &::after {
+        background: $edit-action-color;
+        content: '';
+        display: block;
+        height: 100%;
+        left: 0;
+        opacity: 0.33;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 9999;
+    }
+}

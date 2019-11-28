@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+    <head>
+        <!-- Page title -->
+        <title>Sandbox - Content flow</title>
+
+        <!-- Meta data -->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="
+            width=device-width,
+            initial-scale=1.0,
+            maximum-scale=1.0,
+            user-scalable=no"
+            >
+        <meta name="HandheldFriendly" content="true">
+        <meta name="MobileOptimized" content="320">
+
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="sandbox.css">
+        <link rel="stylesheet" type="text/css" href="../build/content-flow.min.css">
+    </head>
+    <body>
+        <article class="article">
+            <header>
+                <h1>Content flow</h1>
+            </header>
+            <section
+                class="article__body"
+                data-cf-flow="article-body"
+                data-cf-flow-label="Body"
+                data-cf-flow-max-snippets="2"
+                data-cf-flow-frozen
+                >
+                <div class="content-snippet" data-cf-snippet="1" data-cf-snippet-permanent>
+                    <p>Data snippet example: basic</p>
+                </div>
+                <div class="content-snippet" data-cf-snippet="2">
+                    <p>Data snippet example: advanced</p>
+                </div>
+            </section>
+            <aside
+                class="article__related"
+                data-cf-flow="article-related"
+                data-cf-flow-label="Related"
+                >
+                <div class="content-snippet" data-cf-snippet="3">
+                    <p>Archive</p>
+                </div>
+                <div class="content-snippet" data-cf-snippet="4">
+                    <p>Related links</p>
+                </div>
+            </aside>
+        </article>
+        <script type="text/javascript" src="../node_modules/ContentTools/build/content-tools.min.js"></script>
+        <script type="text/javascript" src="../build/content-flow.js"></script>
+        <script type="text/javascript" src="sandbox.js"></script>
+    </body>
+</html>
