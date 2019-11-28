@@ -2853,11 +2853,28 @@
       return ContentEdit.Root.get().startResizing(this, corner, x, y, true);
     };
 
-    ResizableElement.prototype.size = function(newSize) {
+    ResizableElement.prototype.size = function(newSize,fitMax) {
       var height, maxSize, minSize, width;
+      var scaleDownToFit = function(width,height,parentWidth) {
+        var proz = parentWidth / width;
+        width = Math.round(width * proz);
+        height = Math.round(height * proz);
+        return [width,height];
+      };
+      if (fitMax) {
+        var parentDom = this.parent().domElement();
+        var measureDom = document.createElement('div');
+        measureDom.setAttribute('class', 'ce-measure');
+        parentDom.appendChild(measureDom);
+        var parentWidth = measureDom.getBoundingClientRect().width;
+        parentDom.removeChild(measureDom);
+      }
       if (!newSize) {
         width = parseInt(this.attr('width') || 1);
         height = parseInt(this.attr('height') || 1);
+        if (fitMax && width > parentWidth) {
+          return scaleDownToFit(width,height,parentWidth);
+        }
         return [width, height];
       }
       newSize[0] = parseInt(newSize[0]);
@@ -2868,6 +2885,11 @@
       maxSize = this.maxSize();
       newSize[0] = Math.min(newSize[0], maxSize[0]);
       newSize[1] = Math.min(newSize[1], maxSize[1]);
+      if (fitMax && newSize[0] > parentWidth) {
+        var nS = scaleDownToFit(newSize[0],newSize[1],parentWidth);
+        newSize[0] = nS[0];
+        newSize[1] = nS[1];
+      }
       this.attr('width', parseInt(newSize[0]));
       this.attr('height', parseInt(newSize[1]));
       if (this.isMounted()) {
@@ -3214,6 +3236,7 @@
 
     _Root.prototype.startResizing = function(element, corner, x, y, fixed) {
       var measureDom, parentDom;
+
       if (this._resizing) {
         return;
       }

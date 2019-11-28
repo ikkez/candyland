@@ -743,7 +743,7 @@ window.addEventListener('load', function() {
 					var node = insertAt[0];
 					var index = insertAt[1];
 					node.parent().attach(image, index);
-					image.size([width,height]);
+					image.size([width,height],true);
 					image.focus();
 				}
 				// Call the given tool callback
@@ -759,7 +759,7 @@ window.addEventListener('load', function() {
 
 	})(ContentTools.Tool);
 
-	ContentTools.DEFAULT_MAX_ELEMENT_WIDTH = 800;
+	ContentEdit.DEFAULT_MAX_ELEMENT_WIDTH = 1200;
 
 	// ContentTools.DEFAULT_TOOLS[2] = [
 	// 	'image',
@@ -1101,6 +1101,7 @@ window.addEventListener('load', function() {
 	flowMgr.init(flowsQuery = '[data-cf-flow]', api = new ContentFlow.BaseAPI(basePath+'content-api/'+pageId+'/'));
 
 	// flowMgr.init(flowsQuery = '[data-cf-flow]', api = new MockAPI(basePath));
+
 	editor.addEventListener('start', function (ev) {
 		window.dispatchEvent(createEvent('editor_start',false,true));
 	});
@@ -1154,7 +1155,6 @@ window.addEventListener('load', function() {
 	var lang = document.documentElement.lang;
 	xhr.open('GET', 'ext/sugar/ui/editor/contenttools_v1_6_10/ui/lib/ct/translations/'+lang+'.json', true);
 	function onStateChange (ev) {
-
 		var translations;
 		if (ev.target.readyState == 4) {
 			translations = JSON.parse(ev.target.responseText);

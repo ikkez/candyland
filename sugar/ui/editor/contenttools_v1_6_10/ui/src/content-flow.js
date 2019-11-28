@@ -115,7 +115,9 @@
       })(this));
       editor.addEventListener('stop', (function(_this) {
         return function(ev) {
-          return _this._toggle.show();
+          if (_this._domFlows.length > 0) {
+            return _this._toggle.show();
+          }
         };
       })(this));
       this.syncFlows(flowQuery);
@@ -1337,7 +1339,7 @@
     __extends(AddSnippetUI, _super);
 
     function AddSnippetUI() {
-      AddSnippetUI.__super__.constructor.call(this, 'Add');
+      AddSnippetUI.__super__.constructor.call(this, 'Hinzufügen');
       this._tools = {
         cancel: new ContentFlow.InlayToolUI('cancel', 'Cancel', true)
       };
@@ -1364,7 +1366,7 @@
             child = _ref[_i];
             _this._body.detach(child);
           }
-          _this._local = new ContentFlow.InlaySectionUI('Page elements');
+          _this._local = new ContentFlow.InlaySectionUI('Seiten-Elemente');
           _ref1 = payload['snippet_types'];
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             snippetTypeData = _ref1[_j];
@@ -1397,7 +1399,7 @@
             payload = JSON.parse(ev.target.responseText).payload;
             flow = ContentFlow.FlowMgr.get().flow();
             snippetCls = ContentFlow.getSnippetCls(flow);
-            _this._global = new ContentFlow.InlaySectionUI('Global elements');
+            _this._global = new ContentFlow.InlaySectionUI('Globale-Elemente');
             _ref2 = payload.snippets;
             for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
               snippetData = _ref2[_k];
