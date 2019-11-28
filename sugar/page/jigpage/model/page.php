@@ -37,6 +37,12 @@ class Page extends \Sugar\Model\Base {
 			'type' => Schema::DT_TIMESTAMP,
 			'default' => NULL
 		],
+		'lang' => [
+			'type' => Schema::DT_VARCHAR128,
+		],
+		'cid' => array(
+			'type' => Schema::DT_INT,
+		),
 	];
 
 	function loadByAlias($name) {

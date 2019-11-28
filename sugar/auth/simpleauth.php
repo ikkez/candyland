@@ -24,6 +24,10 @@ class SimpleAuth extends Component {
 		$this->model = $model;
 	}
 
+	function service() {
+		return $this->auth_service;
+	}
+
 	/**
 	 * check if a user is logged in
 	 * @return bool
@@ -54,7 +58,14 @@ class SimpleAuth extends Component {
 	}
 
 	/**
-	 * log in as a specific user on the current session
+	 * get user model
+	 */
+	function getModel() {
+		return $this->model;
+	}
+
+	/**
+	 * log in as a specific user
 	 * @param $id
 	 * @param null $model
 	 */

@@ -12,10 +12,13 @@ class Page extends Component {
 	/** @var \Sugar\Page\JigPage\Model\Page */
 	protected $page;
 
-	function loadRoutes(RouteHandler $routehandle) {
-		$pages = new Model\Page();
+	function __construct() {
+		$this->page = new Model\Page();
+	}
 
-		$contentPages = $pages->find();
+	function loadRoutes(RouteHandler $routehandle) {
+
+		$contentPages = $this->page->find();
 		foreach ($contentPages as $page) {
 			if (isset($this->fw['page']['types'][$page->type]))
 				$routehandle->route('GET|POST @'.$page->alias.': /'.$page->slug,
@@ -24,8 +27,11 @@ class Page extends Component {
 	}
 
 	function findPages() {
-		$page = new Model\Page();
-		return $page->find(['deleted_at = ?',null],['order'=>'title']);
+		return $this->page->find(['deleted_at = ?',null],['order'=>'title']);
+	}
+
+	function findPagesByLang($lang) {
+		return $this->page->find(['deleted_at = ? and lang = ?',null,$lang],['order'=>'title']);
 	}
 
 	/**
@@ -34,10 +40,8 @@ class Page extends Component {
 	 * @return bool|Model\Page
 	 */
 	function load($id) {
-		$page = new Model\Page();
-		$page->load(['_id = ?',$id]);
-		if ($page->valid()) {
-			$this->page = $page;
+		$this->page->load(['_id = ?',$id]);
+		if ($this->page->valid()) {
 			return $this->page;
 		}
 		return false;
@@ -63,13 +67,67 @@ class Page extends Component {
 	 * @return bool|Model\Page
 	 */
 	function loadByAlias($alias) {
-		$page = new Model\Page();
-		$page->loadByAlias($alias);
-		if ($page->valid()) {
-			$this->page = $page;
+		if (!$this->fw->devoid('GET.lang',$lang)) {
+			$this->fw->set('LANGUAGE',$lang);
+			$this->fw->set('page.lang',$lang);
+		}
+//		$this->page->load(['alias = ? and lang = ?',$alias, $this->fw->get('page.lang')]);
+		$this->page->load(['alias = ? and lang = ?',$alias, $this->fw->get('page.lang')]);
+
+		if ($this->page->valid()) {
 			return $this->page;
 		}
 		return false;
+	}
+
+	/**
+	 * save a page
+	 * @param $id
+	 * @param $data
+	 * @return bool|Model\Page
+	 */
+	function save($id,$data) {
+		$this->page->load(['_id = ?',$id]);
+		if ($this->page->valid()) {
+			$this->page->copyfrom($data);
+			if (!$this->page->cid) {
+				$this->page->cid = $id;
+			}
+			$this->page->save();
+			return $this->page;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * create a new page
+	 * @param $data
+	 * @return bool
+	 */
+	function create($data) {
+		$this->page->reset();
+		$this->page->copyfrom($data);
+		$this->page->save();
+		$this->page->cid = $this->page->_id;
+		$this->page->save();
+		return true;
+	}
+
+	/**
+	 * delete an existing page
+	 * @return bool
+	 */
+	function delete($id) {
+		$this->page->reset();
+		$this->page->load(['_id = ?',$id]);
+		if (!$this->page->valid()) {
+			$this->fw->error(404);
+		}
+//			$page->touch('deleted_at');
+//			$page->save();
+		$this->page->erase();
+		return true;
 	}
 
 

@@ -57,6 +57,7 @@
  * The holder is the base of the picker.
  */
 .picker__holder {
+  min-width: 280px;
   position: absolute;
   background: #ffffff;
   border: 1px solid #aaaaaa;
@@ -64,7 +65,7 @@
   border-bottom-width: 0;
   border-radius: 0 0 5px 5px;
   box-sizing: border-box;
-  min-width: 176px;
+  /*min-width: 176px;*/
   max-width: 466px;
   max-height: 0;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";

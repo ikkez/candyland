@@ -3,16 +3,10 @@
 namespace Sugar\Content\Controller;
 
 use Sugar\Content\Service\ContentService;
-use Sugar\Page\JigPage\Page;
 use Sugar\Storage;
-use Sugar\UI\Editor\ContentTools_v1_6_10\Provider;
 use Sugar\View\JSON;
 use Sugar\Component;
 use Sugar\View\TemplateInterface;
-use Sugar\View\ViewInterface;
-use Sugar\Auth\SimpleAuth;
-use Model\BackendUser;
-use Sugar\File\FileReference;
 
 class ContentAPI extends Component {
 
@@ -27,58 +21,30 @@ class ContentAPI extends Component {
 
 	protected $db;
 
-	/** @var SimpleAuth $auth */
-	protected $auth;
-
-	/** @var FileReference */
-	public $files;
-
 	/** @var \Sugar\Page\JigPage\Page */
 	protected $page;
 
-	/** @var BackendUser */
-	protected $user;
-
-	/** @var Provider */
-	protected $editor_provider;
+	protected $pid;
 
 	function __construct(TemplateInterface $tmpl_renderer) {
 		$this->tmpl_renderer = $tmpl_renderer;
 	}
 
-	function beforeroute(\Base $f3,$params) {
+	function beforeroute(\Base $f3,$args) {
 		$this->view = new JSON();
-		if (!$this->editor_provider->isEnabled()) {
-			$this->fw->error(403);
+
+		if (isset($args['id'])) {
+			$this->pid = $args['id'];
+			$this->model = $this->load($args['id']);
 		}
+		else
+			$f3->error(400,'id parameter required');
 	}
 
-	function afterroute(\Base $f3,$params) {
+	function afterroute(\Base $f3,$args) {
 		$this->view->dump();
 	}
 
-	/**
-	 * save page contents
-	 * @param \Base $f3
-	 * @param $args
-	 * @return bool
-	 */
-	function handle(\Base $f3, $args) {
-		if (isset($args['action'])) {
-			// load content model for current page
-			if (isset($args['pid']))
-				$this->model = $this->load($args['pid']);
-			else
-				$f3->error(400,'pid parameter required');
-
-			$method = $this->fw->camelcase(str_replace('-','_',$args['action']));
-			if (method_exists($this,$method))
-				$this->{$method}($this->fw,$args);
-			else
-				$this->fw->error(405);
-		} else
-			$this->fw->error(400,'no action was defined');
-	}
 
 	/**
 	 * load page content snippets
@@ -94,9 +60,9 @@ class ContentAPI extends Component {
 	 * load global content snippets
 	 * @return \Sugar\Content\Model\Content
 	 */
-	function loadGlobalContent() {
-		return new \Sugar\Content\Model\Content('global',$this->db);
-	}
+//	function loadGlobalContent() {
+//		return new \Sugar\Content\Model\Content('global',$this->db);
+//	}
 
 	/**
 	 * get a list of existing snippets within a flow
@@ -122,6 +88,8 @@ class ContentAPI extends Component {
 
 			$content_service = new ContentService($this->model);
 			$content_service->saveSnippets($data);
+
+			$this->emit('saved',['data'=>$data,'pid'=>$this->pid],$this->model);
 
 			$this->fw->status(200);
 			return;
@@ -173,8 +141,8 @@ class ContentAPI extends Component {
 	 */
 	function updateSnippetScope($cId,$flow,$scope,$label=NULL) {
 		if ($scope == 'global') {
-			$global_content = new \Sugar\Content\Model\Content('global',$this->db);
-			$content = new \Sugar\Content\Model\Content($this->page->_id,$this->db);
+			$global_content = $this->load('global');
+			$content = $this->load($this->page->_id);
 			if ($content->exists($cId)) {
 				$ce = $content->get($cId);
 				$ce['scope'] = 'global';
@@ -253,7 +221,7 @@ class ContentAPI extends Component {
 			$contentService = new ContentService($this->model);
 			$snippet = $contentService->addSnippet($type,$flow);
 
-			$this->tmpl_renderer->set('content',$this->load($args['pid']));
+			$this->tmpl_renderer->set('content',$this->load($args['id']));
 			$this->tmpl_renderer->setTemplate('templates/snippets/'.$type.'.html');
 			$this->tmpl_renderer->set('ce',$snippet);
 			$html = $this->tmpl_renderer->render();
@@ -288,7 +256,7 @@ class ContentAPI extends Component {
 				$content_element = $this->model->get($cId);
 
 				// render snippet
-				$this->tmpl_renderer->set('content',$this->load($args['pid']));
+				$this->tmpl_renderer->set('content',$this->load($args['id']));
 				$this->tmpl_renderer->setTemplate('templates/snippets/'.$content_element['type'].'.html');
 				$this->tmpl_renderer->set('ce',$content_element);
 				$html = $this->tmpl_renderer->render();
@@ -319,176 +287,5 @@ class ContentAPI extends Component {
 			$contentService->updateSnippetScope($cId,$flow,$scope,$label);
 		}
 	}
-
-
-	/**
-	 * handle image action
-	 * @param \Base $f3
-	 * @param $args
-	 */
-	function image(\Base $f3, $args) {
-		if (isset($args['action'])) {
-
-			$method = 'image_'.$this->fw->camelcase(str_replace('-','_',$args['action']));
-			if (method_exists($this,$method))
-				$this->{$method}($f3, $args);
-			else
-				$this->fw->error(405);
-		} else
-			$this->fw->error(400);
-	}
-
-	/**
-	 * accept file uploads
-	 * @param \Base $f3
-	 * @param $params
-	 */
-	function image_upload(\Base $f3, $args) {
-		$error = false;
-		$files = \Web::instance()->receive(function($file,$fieldName) use (&$error) {
-			if ($file['size'] > ($this->fw->get('upload_max_size') * 1024)) {
-				$error = $this->fw->get('ll.error.validation.file_size',
-					[basename($file['name']),$this->fw->get('upload_max_size').' kb']);
-				return false;
-			}
-			return TRUE;
-		},true,true);
-
-
-		if ($error) {
-			$this->fw->status(400);
-			$this->view->set('error',$error);
-		}
-		else {
-			$this->view->set('status','success');
-			if ($files) {
-				$files = array_keys($files);
-
-				$path = $files[0];
-				$file = pathinfo($path);
-				$new_path = $file['basename'];
-				$this->files->load('uploads/'.$file['basename']);
-				$this->files->move($new_path);
-				$this->files->file=$new_path;
-				$this->files->save();
-				$sk=$this->files->filesystem()->getStorageKey();
-				$spath=str_replace('local:','',$sk);
-				$img = new \Image($new_path,false,$spath);
-				$this->view->set('file',[
-					'name'=>basename($new_path),
-					'path'=>$spath.$new_path,
-					'width'=>$img->width(),
-					'height'=>$img->height()
-				]);
-			}
-		}
-	}
-
-	//	function insert() {
-	//		$path = $this->fw->get('POST.url');
-	//		$width = $this->fw->get('POST.width');
-	//		$crop = $this->fw->get('POST.crop');
-	//
-	//		if (is_file($path)) {
-	//			$file = pathinfo($path);
-	//			$new_path = 'images/'.$file['basename'];
-	//			$this->files->load($path);
-	//			$this->files->move($new_path);
-	//			$this->files->file=$new_path;
-	//			$this->files->save();
-	//
-	//			$view = new JSON();
-	//			$view->set('status','success');
-	//			$img = new \Image($new_path,false,'./');
-	//			$size = [$img->width(),$img->height()];
-	//			$view->set('size',$size);
-	//			$view->set('alt','');
-	//			$view->set('url',$new_path);
-	//			$view->dump();
-	//			exit();
-	//		} else {
-	//			$this->fw->status(400);
-	//			$view = new JSON();
-	//			$view->set('error','file not existing');
-	//			$view->dump();
-	//			exit();
-	//		}
-	//	}
-
-	/**
-	 * list all images
-	 */
-	function image_collection(\Base $f3, $args) {
-		$files = $this->files->filesystem()->listDir();
-		$out = [];
-		foreach ($files as $filename=>$item) {
-			if ($item['type'] == 'file' && in_array($item['extension'],['jpg','png'])) {
-				$img = new \Image($item['path']);
-				$out[] = [
-					'name'=>$filename,
-					'path'=>$item['path'],
-					'width'=>$img->width(),
-					'height'=>$img->height()
-				];
-			}
-		}
-
-		$this->view->set('status','success');
-		$this->view->set('files',$out);
-	}
-
-
-
-	/**
-	 * get page list
-	 * @param \Base $f3
-	 * @param $args
-	 * @return bool
-	 */
-	function page(\Base $f3, $args) {
-
-		if (isset($args['action'])) {
-			if ($args['action'] == 'collection') {
-				$results = $this->page->findPages();
-				$this->view->set('pages', $results ? $results->castAll(0) : []);
-			}
-			else
-				$this->fw->error(405);
-		} else
-			$this->fw->error(400);
-	}
-
-
-//
-//	function insert() {
-//		$path = $this->fw->get('POST.url');
-//		$width = $this->fw->get('POST.width');
-//		$crop = $this->fw->get('POST.crop');
-//
-//		if (is_file($path)) {
-//			$file = pathinfo($path);
-//			$new_path = 'images/'.$file['basename'];
-//			$this->files->load($path);
-//			$this->files->move($new_path);
-//			$this->files->file=$new_path;
-//			$this->files->save();
-//
-//			$view = new JSON();
-//			$view->set('status','success');
-//			$img = new \Image($new_path,false,'./');
-//			$size = [$img->width(),$img->height()];
-//			$view->set('size',$size);
-//			$view->set('alt','');
-//			$view->set('url',$new_path);
-//			$view->dump();
-//			exit();
-//		} else {
-//			$this->fw->status(400);
-//			$view = new JSON();
-//			$view->set('error','file not existing');
-//			$view->dump();
-//			exit();
-//		}
-//	}
 
 }
