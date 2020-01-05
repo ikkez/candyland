@@ -10,8 +10,8 @@ class Debugger extends Component {
 
 	function ready() {
 
-//		if (!$this->fw->exists('DEV',$dev) || !$dev)
-//			return;
+		if ($this->fw->exists('ENABLE_CLOCKWORK',$go) && !$go)
+			return;
 
 		\Clockwork\Support\Vanilla\Clockwork::init([
 			'register_helpers'     => true,
