@@ -91,22 +91,22 @@ class Debugger extends \Prefab {
 				$clock->startEvent('route.call',$args);
 			});
 
-			$this->ev->on('component.load',function($args,$context,$ev) use ($clock)  {
+			$this->ev->on('component_load',function($args,$context,$ev) use ($clock)  {
 				$clock->startEvent('component.load.'.spl_object_hash($context),
 					'load: '.$args['name']);
 			});
 
-			$this->ev->on('component.ready',function($args,$context,$ev) use ($clock)  {
+			$this->ev->on('component_ready',function($args,$context,$ev) use ($clock)  {
 				$clock->endEvent('component.load.'.spl_object_hash($context));
 				$clock->info('component.ready: '.$args['name'],$args);
 			});
 
-			$this->ev->on('component.port.open',function($args,$context,$ev) use ($clock)  {
+			$this->ev->on('component_port_open',function($args,$context,$ev) use ($clock)  {
 				$clock->startEvent('component.'.spl_object_hash($context).'.port.'.
 					$args['port'],'port: '.$args['name'].".".$args['port']);
 			});
 
-			$this->ev->on('component.port.close',function($args,$context,$ev) use ($clock)  {
+			$this->ev->on('component_port_close',function($args,$context,$ev) use ($clock)  {
 				$clock->endEvent('component.'.spl_object_hash($context).'.port.'.
 					$args['port']);
 			});
