@@ -42,27 +42,14 @@ class Debugger extends \Prefab {
 		$clock = \Clockwork\Support\Vanilla\Clockwork::init($options);
 		$this->clock = $clock;
 
-
+		// create authenticator when a password was defined
 		if (!empty($options['auth_password'])) {
 			$auth = new SimpleAuthenticator($options['auth_password']);
 			$clock->setAuthenticator($auth);
 		}
 
-		// authentication route
-		$this->fw->route('GET|POST /__clockwork/auth', function ($f3, $args) use ($clock) {
-			$token = $clock->getAuthenticator()->attempt(['password'=>$f3->get('POST.password')]);
-			header('Content-Type: application/json');
-			$f3->status($token ? 200 : 403);
-			echo json_encode(['token'=>$token]);
-			exit();
-		});
-
-		$this->fw->route('GET /__clockwork/*', function ($f3, $args) use ($clock)  {
-			return $clock->returnMetadata( $args['*'] );
-		});
-
+		// validate auth token and produce response with instructions if unauthenticated
 		if ($this->fw->exists('HEADERS.X-Clockwork-Auth',$token)) {
-			// metadata request from browser plugin
 			$authenticated = $clock->getAuthenticator()->check($token);
 			if (!$authenticated) {
 				header('Content-Type: application/json');
@@ -72,7 +59,23 @@ class Debugger extends \Prefab {
 			}
 		}
 
-		if (!preg_match('/^__clockwork\/.*/',$this->fw->PATH)) {
+		if (preg_match('/^\/__clockwork\/.*/i',$this->fw->PATH)) {
+
+			// authentication route
+			$this->fw->route('GET|POST /__clockwork/auth', function ($f3, $args) use ($clock) {
+				$token = $clock->getAuthenticator()->attempt(['password'=>$f3->get('POST.password')]);
+				header('Content-Type: application/json');
+				$f3->status($token ? 200 : 403);
+				echo json_encode(['token'=>$token]);
+				exit();
+			});
+
+			// metadata request from browser plugin
+			$this->fw->route('GET /__clockwork/*', function ($f3, $args) use ($clock)  {
+				return $clock->returnMetadata( $args['*'] );
+			});
+
+		} else {
 			// setup tracking requests
 
 			$this->fw->set('QUIET',TRUE);
