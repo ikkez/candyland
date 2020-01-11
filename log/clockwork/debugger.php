@@ -4,7 +4,6 @@ namespace Sugar\Log\Clockwork;
 
 use Clockwork\Authentication\SimpleAuthenticator;
 use DB\SQL;
-use Sugar\Component;
 use Sugar\ComponentTrait;
 use Sugar\Storage;
 
@@ -21,6 +20,7 @@ class Debugger extends \Prefab {
 			return;
 
 		$options = [
+			'api'                  => $this->fw->BASE.'/__clockwork/',
 			'register_helpers'     => true,
 			'enable'               => true,
 			'check_cookie'         => 'XDEBUG_SESSION',
@@ -42,6 +42,7 @@ class Debugger extends \Prefab {
 		$clock = \Clockwork\Support\Vanilla\Clockwork::init($options);
 		$this->clock = $clock;
 
+
 		if (!empty($options['auth_password'])) {
 			$auth = new SimpleAuthenticator($options['auth_password']);
 			$clock->setAuthenticator($auth);
@@ -56,21 +57,22 @@ class Debugger extends \Prefab {
 			exit();
 		});
 
+		$this->fw->route('GET /__clockwork/*', function ($f3, $args) use ($clock)  {
+			return $clock->returnMetadata( $args['*'] );
+		});
+
 		if ($this->fw->exists('HEADERS.X-Clockwork-Auth',$token)) {
 			// metadata request from browser plugin
 			$authenticated = $clock->getAuthenticator()->check($token);
-			if ($authenticated === true) {
-				$this->fw->route('GET /__clockwork/*', function ($f3, $args) use ($clock)  {
-					return $clock->returnMetadata( $args['*'] );
-				});
-			} else {
+			if (!$authenticated) {
 				header('Content-Type: application/json');
 				$this->fw->status(403);
 				echo json_encode(['message'=>$authenticated,'requires' => $clock->getAuthenticator()->requires()]);
 				exit();
 			}
+		}
 
-		} else {
+		if (!preg_match('/^__clockwork\/.*/',$this->fw->PATH)) {
 			// setup tracking requests
 
 			$this->fw->set('QUIET',TRUE);
@@ -135,13 +137,13 @@ class Debugger extends \Prefab {
 	}
 
 	function logHive() {
-//		$hive = clock()->userData('hive')->title('Hive');
-//		$out = [];
-//		foreach (\Base::instance()->hive() as  $key => $value) {
-//			$out[] = ['key' => $key, 'value' => $value];
-//		}
-//		ksort($out);
-//		$hive->table('HIVE',$out);
+		//		$hive = clock()->userData('hive')->title('Hive');
+		//		$out = [];
+		//		foreach (\Base::instance()->hive() as  $key => $value) {
+		//			$out[] = ['key' => $key, 'value' => $value];
+		//		}
+		//		ksort($out);
+		//		$hive->table('HIVE',$out);
 		if ($this->enabled)
 			$this->clock->info('HIVE',\Base::instance()->hive());
 	}
