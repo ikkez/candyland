@@ -125,8 +125,8 @@ class Debugger extends \Prefab {
 					$logs=explode("\n",$logs);
 					foreach ($logs as $line) {
 						$ex=explode(')',$line,2);
-						if (preg_match('/\((\d+\.\d+ms)\)/',$ex[0].')',$match)) {
-							$time=((float)$match[1]);
+						if (preg_match('/\((\d+(?:[.,]\d+)ms)\)/',$ex[0].')',$match)) {
+							$time=((float)str_replace(',','.',$match[1]));
 							$query=trim($ex[1]);
 							$clock->addDatabaseQuery($query,[],$time);
 						}
