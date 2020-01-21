@@ -205,7 +205,7 @@ class MultistepForm extends Component {
 		}
 
 		$all_valid = true;
-		foreach ($steps as $step) {
+		foreach ((isset($steps)?$steps:$this->steps) as $step) {
 			if (!$step['valid']) {
 				$all_valid=FALSE;
 				break;
