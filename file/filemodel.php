@@ -7,6 +7,9 @@ class FileModel extends \Sugar\Model\Base {
 	protected $table = 'files';
 
 	protected $fieldConf = [
+		'uuid' => [
+			'type' => self::DT_VARCHAR128,
+		],
 		'file' => [
 			'type' => self::DT_VARCHAR256,
 		],

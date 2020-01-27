@@ -34,6 +34,7 @@ class FileMeta implements \FAL\MetaStorageInterface {
 		if ($this->model->dry()) {
 			$this->model->file = $file;
 			$this->model->storage = $s_key;
+			$this->model->uuid = \Base::instance()->hash($s_key.$file.uniqid());
 		}
 
 		$this->model->copyfrom($data,[
@@ -42,6 +43,23 @@ class FileMeta implements \FAL\MetaStorageInterface {
 
 		$this->model->save();
 		unset($this->cache[$s_key.$file]);
+		return $this->model->id;
+	}
+
+	/**
+	 * return file ID
+	 * @return mixed
+	 */
+	function getIdentifier() {
+		return $this->model->id;
+	}
+
+	/**
+	 * return file ID
+	 * @return mixed
+	 */
+	function getUUID() {
+		return $this->model->uuid;
 	}
 
 	/**
@@ -57,6 +75,36 @@ class FileMeta implements \FAL\MetaStorageInterface {
 			$this->cache[$s_key.$file]=$this->model->valid() ? $this->model->cast(null,0) : [];
 		}
 		return $this->cache[$s_key.$file];
+	}
+
+	/**
+	 * load file meta by plain id
+	 * @param $fileId
+	 * @param int $ttl
+	 * @return mixed
+	 */
+	function loadById($fileId,$ttl=0) {
+		$s_key = $this->fs->getStorageKey();
+		if (!isset($this->cache[$s_key.$fileId])) {
+			$this->model->load(['_id = ? and storage = ?',$fileId,$s_key],null,$ttl);
+			$this->cache[$s_key.$fileId]=$this->model->valid() ? $this->model->cast(null,0) : [];
+		}
+		return $this->cache[$s_key.$fileId];
+	}
+
+	/**
+	 * load file meta by identifier
+	 * @param $fileId
+	 * @param int $ttl
+	 * @return mixed
+	 */
+	function loadByUUID($uuid,$ttl=0) {
+		$s_key = $this->fs->getStorageKey();
+		if (!isset($this->cache[$s_key.$uuid])) {
+			$this->model->load(['uuid = ? and storage = ?',$uuid,$s_key],null,$ttl);
+			$this->cache[$s_key.$uuid]=$this->model->valid() ? $this->model->cast(null,0) : [];
+		}
+		return $this->cache[$s_key.$uuid];
 	}
 
 	/**
