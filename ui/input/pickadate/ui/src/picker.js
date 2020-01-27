@@ -1,5 +1,5 @@
 /*!
- * pickadate.js v3.5.6, 2015/04/20
+ * pickadate.js v3.6.2, 2019/03/19
  * By Amsul, http://amsul.ca
  * Hosted on http://amsul.github.io/pickadate.js
  * Licensed under MIT
@@ -254,7 +254,7 @@ function PickerConstructor( ELEMENT, NAME, COMPONENT, OPTIONS ) {
 
                     // Prevent the page from scrolling.
                     if ( IS_DEFAULT_THEME ) {
-                        $html.
+                        $('body').
                             css( 'overflow', 'hidden' ).
                             css( 'padding-right', '+=' + getScrollbarWidth() )
                     }
@@ -381,7 +381,7 @@ function PickerConstructor( ELEMENT, NAME, COMPONENT, OPTIONS ) {
 
                 // Allow the page to scroll.
                 if ( IS_DEFAULT_THEME ) {
-                    $html.
+                    $('body').
                         css( 'overflow', '' ).
                         css( 'padding-right', '-=' + getScrollbarWidth() )
                 }
@@ -607,8 +607,6 @@ function PickerConstructor( ELEMENT, NAME, COMPONENT, OPTIONS ) {
         ) //endreturn
     } //createWrappedComponent
 
-
-
     /**
      * Prepare the input element with all bindings.
      */
@@ -629,10 +627,11 @@ function PickerConstructor( ELEMENT, NAME, COMPONENT, OPTIONS ) {
             ).
 
             // On focus/click, open the picker.
-            on( 'focus.' + STATE.id + ' click.' + STATE.id, function(event) {
+            on( 'focus.' + STATE.id + ' click.' + STATE.id,
+            debounce(function(event) {
                 event.preventDefault()
                 P.open()
-            })
+            }, 100))
 
         // Only bind keydown events if the element isn’t editable.
         if ( !SETTINGS.editable ) {
@@ -988,7 +987,21 @@ function getRealEventTarget( event, ELEMENT ) {
     return event.target
 }
 
-
+// taken from https://davidwalsh.name/javascript-debounce-function
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+}
 
 /**
  * PickerConstructor helper methods.
