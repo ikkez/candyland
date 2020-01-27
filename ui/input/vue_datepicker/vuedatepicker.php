@@ -10,7 +10,7 @@ class VueDatePicker extends Component {
 		$this->fw->concat('UI',';'.$this->getComponentPath().'ui/');
 
 		\Assets::instance()->addJs("src/dist/vuejs-datepicker.js",5,'footer','datepicker');
-		\Assets::instance()->addJs("component.js",5,'footer','datepicker');
+		\Assets::instance()->addJs("vue_datepicker.js",5,'footer','datepicker');
 	}
 
 }
