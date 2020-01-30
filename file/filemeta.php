@@ -29,12 +29,12 @@ class FileMeta implements \FAL\MetaStorageInterface {
 	 */
 	function save($file,$data,$ttl=0) {
 		$s_key = $this->fs->getStorageKey();
-		$this->model->load(['file = ? and storage = ?',$file,$s_key]);
+		$this->model->load(['file = ? and storage = ? and deleted_at = ?',$file,$s_key,NULL]);
 
 		if ($this->model->dry()) {
 			$this->model->file = $file;
 			$this->model->storage = $s_key;
-			$this->model->uuid = \Base::instance()->hash($s_key.$file.uniqid());
+			$this->model->uuid = \Base::instance()->hash($s_key.$file.uniqid('',true));
 		}
 
 		$this->model->copyfrom($data,[
@@ -71,7 +71,7 @@ class FileMeta implements \FAL\MetaStorageInterface {
 	function load($file,$ttl=0) {
 		$s_key = $this->fs->getStorageKey();
 		if (!isset($this->cache[$s_key.$file])) {
-			$this->model->load(['file = ? and storage = ?',$file,$s_key],null,$ttl);
+			$this->model->load(['file = ? and storage = ? and deleted_at = ?',$file,$s_key,NULL],null,$ttl);
 			$this->cache[$s_key.$file]=$this->model->valid() ? $this->model->cast(null,0) : [];
 		}
 		return $this->cache[$s_key.$file];
@@ -86,7 +86,7 @@ class FileMeta implements \FAL\MetaStorageInterface {
 	function loadById($fileId,$ttl=0) {
 		$s_key = $this->fs->getStorageKey();
 		if (!isset($this->cache[$s_key.$fileId])) {
-			$this->model->load(['_id = ? and storage = ?',$fileId,$s_key],null,$ttl);
+			$this->model->load(['_id = ? and storage = ? and deleted_at = ?',$fileId,$s_key,NULL],null,$ttl);
 			$this->cache[$s_key.$fileId]=$this->model->valid() ? $this->model->cast(null,0) : [];
 		}
 		return $this->cache[$s_key.$fileId];
@@ -101,7 +101,7 @@ class FileMeta implements \FAL\MetaStorageInterface {
 	function loadByUUID($uuid,$ttl=0) {
 		$s_key = $this->fs->getStorageKey();
 		if (!isset($this->cache[$s_key.$uuid])) {
-			$this->model->load(['uuid = ? and storage = ?',$uuid,$s_key],null,$ttl);
+			$this->model->load(['uuid = ? and storage = ? and deleted_at = ?',$uuid,$s_key,NULL],null,$ttl);
 			$this->cache[$s_key.$uuid]=$this->model->valid() ? $this->model->cast(null,0) : [];
 		}
 		return $this->cache[$s_key.$uuid];
