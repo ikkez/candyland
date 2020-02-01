@@ -4,9 +4,7 @@
  */
 Vue.component('pickadate', {
 	template:
-		'<div class="uk-inline">'+
-			'<input ref="input" class="uk-input uk-form-width-medium pickadate" :name="input_name" :data-value="input_value" :placeholder="input_placeholder">'+
-		'</div>'
+		'<input ref="input" class="uk-input uk-form-width-medium pickadate" :name="input_name" :data-value="input_value" :placeholder="input_placeholder">'
 	,
 	props: ['name','value','format','placeholder','min','max','selectMonths','selectYears'],
 	data: function() {
@@ -38,11 +36,6 @@ Vue.component('pickadate', {
 		if (this.max) {
 			opt.max= new Date(this.max);
 		}
-		$('.pickadate',this.$el).pickadate(opt);
-	},
-	methods: {
-		update: function(date) {
-			// console.log(date);
-		},
+		$(this.$el).pickadate(opt);
 	}
 });
