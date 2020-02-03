@@ -14,6 +14,8 @@ class Debugger extends \Prefab {
 	protected $enabled = false;
 	protected $clock;
 
+	protected $components=[];
+
 	function ready() {
 
 		if (!isset($this->config['enable']) || !$this->config['enable'])
@@ -89,6 +91,7 @@ class Debugger extends \Prefab {
 			$this->_parent->on('beforeRun',function() use ($clock)  {
 				$clock->endEvent('app_load');
 				$this->logHive();
+				$this->logAppConfig();
 				$clock->startEvent('app',"App Run");
 			});
 
@@ -103,7 +106,10 @@ class Debugger extends \Prefab {
 
 			$this->ev->on('component_ready',function($args,$context,$ev) use ($clock)  {
 				$clock->endEvent('component.load.'.spl_object_hash($context));
-				$clock->info('component.ready: '.$args['name'],$args);
+				$this->components[] = [
+					'Name' => $args['name'],
+					'Config' => $args,
+					'Class'=>get_class($context)];
 			});
 
 			$this->ev->on('component_port_open',function($args,$context,$ev) use ($clock)  {
@@ -116,7 +122,24 @@ class Debugger extends \Prefab {
 					$args['port']);
 			});
 
+			$this->ev->on('debug',function($args,$context,$ev) use ($clock)  {
+				$clock->warning('debug',$args);
+			});
+
 			$this->_parent->on('afterRun',function() use ($clock)  {
+
+				$comp = clock()->userData('components')->title('Components');
+				$comps = [];
+				foreach ($this->components as $item)
+					$comps[$item['Name']]=true;
+
+				$comp->counters([
+					'Components' => count($comps),
+					'Instances' => count($this->components),
+				]);
+
+				$comp->table('Components',$this->components);
+
 				/** @var \Base $f3 */
 				$f3=\Base::instance();
 				$obj=Storage::instance()->get('sql');
@@ -140,15 +163,32 @@ class Debugger extends \Prefab {
 	}
 
 	function logHive() {
-		//		$hive = clock()->userData('hive')->title('Hive');
-		//		$out = [];
-		//		foreach (\Base::instance()->hive() as  $key => $value) {
-		//			$out[] = ['key' => $key, 'value' => $value];
-		//		}
-		//		ksort($out);
-		//		$hive->table('HIVE',$out);
 		if ($this->enabled)
 			$this->clock->info('HIVE',\Base::instance()->hive());
+	}
+
+	function logAppConfig() {
+		if (!$this->enabled) return;
+
+		$app = clock()->userData('app')->title('App');
+		$out = [];
+		/** @var \Base $f3 */
+		$f3 = \Base::instance();
+		$data = $f3->get('APP');
+		$data['AUTOLOAD']=$f3->AUTOLOAD;
+		$data['LOCALES']=$f3->LOCALES;
+		$data['TZ']=$f3->TZ;
+		$data['CACHE']=$f3->CACHE;
+		$data['JAR']=$f3->JAR;
+		$data['BASE']=$f3->BASE;
+		$data['PATH']=$f3->PATH;
+		$data['ROOT']=$f3->ROOT;
+		ksort($data);
+		foreach ($data as $key => $value) {
+			$out[] = ['key' => $key, 'value' => $value];
+		}
+		$app->table('App',$out);
+
 	}
 
 	function logContext($args,$context,$ev) {
