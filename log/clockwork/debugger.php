@@ -123,8 +123,34 @@ class Debugger extends \Prefab {
 			});
 
 			$this->ev->on('debug',function($args,$context,$ev) use ($clock)  {
+				if (!is_array($args))
+					$args=[$args];
 				$clock->warning('debug',$args);
 			});
+
+			$levels = [
+				'emergency',
+				'alert',
+				'critical',
+				'error',
+				'warning',
+				'notice',
+				'info',
+				'debug',
+			];
+			foreach ($levels as $level) {
+				$this->ev->on('log.'.$level,function($args,$context,$ev) use ($clock)  {
+					if (!is_array($args))
+						$args=[$args];
+					if (isset($args['msg'])) {
+						$msg = $args['msg'];
+						unset($args['msg']);
+						$clock->log($ev['key'],$msg,$args);
+					}
+					else
+						$clock->log($ev['key'],$args);
+				});
+			}
 
 			$this->_parent->on('afterRun',function() use ($clock)  {
 
