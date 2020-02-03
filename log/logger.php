@@ -33,7 +33,7 @@ class Logger extends \Sugar\Component implements LoggerInterface {
 				return $args;
 			if (!is_array($args))
 				$args=['msg'=>$args];
-			$msg = $args['msg'];
+			$msg = isset($args['msg'])?$args['msg']:$ev['key'];
 			$attr = $args;
 			unset($attr['msg']);
 			if ($context)
