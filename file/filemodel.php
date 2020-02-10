@@ -47,4 +47,9 @@ class FileModel extends \Sugar\Model\Base {
 	function enableFilter() {
 		return ['deleted_at = ?',NULL];
 	}
+
+	function path() {
+		$exp = explode(':',$this->get('storage'),2);
+		return $exp[1].$this->get('file');
+	}
 }
