@@ -96,6 +96,33 @@ class JWT extends \Sugar\Component implements AuthServiceInterface {
 	}
 
 	/**
+	 * get expiration timestamp
+	 * @return int|mixed
+	 */
+	function getExpiration() {
+		if ($this->auth_token) {
+			$data = $this->decodeToken($this->auth_token);
+			return isset($data['exp']) ? $data['exp'] : 0;
+		}
+		else return 0;
+	}
+
+	/**
+	 * regenerate session, keep alive
+	 */
+	function refresh() {
+		if ($this->auth_token) {
+			$data = $this->decodeToken($this->auth_token);
+			$sub = $data['sub'];
+			unset($data['iss'],$data['aud'],$data['iat'],$data['nbf'],$data['exp'],$data['sub']);
+			$token = $this->generateToken($sub,$data);
+			$this->setAuthToken($token);
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * authenticated as a specific user/entity
 	 * @param $auth_value
 	 * @param array|null $meta

@@ -67,7 +67,7 @@ class SimpleAuth extends Component {
 	/**
 	 * log in as a specific user
 	 * @param $id
-	 * @param null $model
+	 * @param null $model define a model object to be shared as logged in user
 	 */
 	function logInAsUser($id,$model=null) {
 		$this->auth_service->loginAs($id);

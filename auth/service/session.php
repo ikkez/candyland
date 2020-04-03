@@ -57,8 +57,30 @@ class Session extends \Sugar\Component implements AuthServiceInterface {
 	 * @param $auth_value
 	 */
 	function loginAs($auth_value) {
+		// regenerate ID, also updates expiration time, but will keep the session data
+		$this->refresh();
 		$this->fw->set('SESSION'.$this->prefix.'.authenticated',$auth_value);
 		$this->auth_value = $auth_value;
+	}
+
+	/**
+	 * get expiration timestamp
+	 * @return int
+	 */
+	function getExpiration() {
+		if ($this->fw->exists('SESSION'.$this->prefix.'.expiration', $exp))
+			return $exp;
+		else return 0;
+	}
+
+	/**
+	 * regenerate session, keep alive
+	 */
+	function refresh() {
+		$success = session_regenerate_id();
+		if ($success)
+			$this->fw->set('SESSION'.$this->prefix.'.expiration', $this->fw->get('JAR.expire'));
+		return $success;
 	}
 
 	/**
