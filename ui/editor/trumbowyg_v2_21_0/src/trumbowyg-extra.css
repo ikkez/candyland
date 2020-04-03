@@ -1,0 +1,4 @@
+/* additional custom buttons with fontawesome icons */
+.trumbowyg-button-group .fas svg {
+	display: none;
+}

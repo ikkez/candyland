@@ -14,6 +14,9 @@ class Trumbowyg extends Component {
 		\Assets::instance()->addJs('dist/trumbowyg.min.js',6,'footer','trumbowyg');
 		\Assets::instance()->addJs("dist/plugins/history/trumbowyg.history.min.js",5,'footer','trumbowyg');
 		\Assets::instance()->addJs("dist/langs/de.min.js",5,'footer','trumbowyg');
+		\Assets::instance()->addInline("$(function() {
+			$.trumbowyg.svgPath = '".$this->getComponentPath()."src/dist/ui/icons.svg';
+		});",'js','footer','trumbowyg');
 
 	}
 
