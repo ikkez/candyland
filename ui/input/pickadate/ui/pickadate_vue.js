@@ -6,16 +6,18 @@ Vue.component('pickadate', {
 	template:
 		'<input ref="input" class="uk-input uk-form-width-medium pickadate" :name="input_name" :data-value="input_value" :placeholder="input_placeholder">'
 	,
-	props: ['name','value','format','placeholder','min','max','selectMonths','selectYears'],
+	props: ['name','value','format','placeholder','minDate','maxDate','selectMonths','selectYears'],
 	data: function() {
 		return {
+			input_el: null,
+			picker: null,
 			input_name: this.name,
 			input_value: this.value,
 			input_placeholder: this.placeholder !== undefined ? this.placeholder : 'TT.MM.JJJJ',
 			input: false,
 			format: typeof this.format !== undefined ? this.format : 'dd.mm.yyyy',
-			min: typeof this.min !== undefined ? this.min : false,
-			max: typeof this.max !== undefined ? this.max : false,
+			minDate: typeof this.minDate !== undefined ? this.minDate : false,
+			maxDate: typeof this.maxDate !== undefined ? this.maxDate : false,
 			selectMonths: typeof this.selectMonths !== undefined ? this.selectMonths : false,
 			selectYears: typeof this.selectYears !== undefined ? this.selectYears : false,
 		}
@@ -30,12 +32,42 @@ Vue.component('pickadate', {
 			selectMonths: this.selectMonths,
 			selectYears: this.selectYears,
 		};
-		if (this.min) {
-			opt.min= new Date(this.min);
+		if (this.minDate) {
+			opt.min= new Date(this.minDate);
 		}
-		if (this.max) {
-			opt.max= new Date(this.max);
+		if (this.maxDate) {
+			opt.max= new Date(this.maxDate);
 		}
-		$(this.$el).pickadate(opt);
+		this.input_el = $(this.$el).pickadate(opt);
+		this.picker = this.input_el.pickadate('picker')
+	},
+	methods: {
+		formatDate: function(date) {
+			var d = new Date(date),
+				month = '' + (d.getMonth() + 1),
+				day = '' + d.getDate(),
+				year = d.getFullYear();
+			if (month.length < 2)
+				month = '0' + month;
+			if (day.length < 2)
+				day = '0' + day;
+			return [year, month, day].join('-');
+		},
+		update: function(context) {
+			let date = new Date(context.select);
+			this.$emit('input', this.formatDate(date));
+		}
+	},
+	watch: {
+		minDate: function(newVal, oldVal) {
+			if (newVal)
+				newVal = new Date(newVal);
+			this.picker.set('min', newVal);
+		},
+		maxDate: function(newVal, oldVal) {
+			if (newVal)
+				newVal = new Date(newVal);
+			this.picker.set('max', newVal);
+		}
 	}
 });
