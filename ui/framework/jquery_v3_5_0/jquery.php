@@ -1,6 +1,6 @@
 <?php
 
-namespace Sugar\UI\Framework\jQuery_v3_3_1;
+namespace Sugar\UI\Framework\jQuery_v3_5_0;
 
 use Sugar\Component;
 
