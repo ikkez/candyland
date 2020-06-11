@@ -71,3 +71,63 @@ Vue.component('pickadate', {
 		}
 	}
 });
+
+
+/**
+ * pickadate timepicker
+ */
+Vue.component('pickatime', {
+	template:
+		'<input ref="input" class="uk-input uk-form-width-medium pickadate timepicker" :name="input_name" :data-value="input_value" :placeholder="input_placeholder">'
+	,
+	props: ['name','value','format','placeholder','minTime','maxTime','interval'],
+	data: function() {
+		return {
+			input_el: null,
+			picker: null,
+			input_name: this.name,
+			input_value: this.value,
+			interval: typeof this.interval !== undefined ? this.interval : 30,
+			input_placeholder: this.placeholder !== undefined ? this.placeholder : '00:00',
+			input: false,
+			format: typeof this.format !== undefined ? this.format : 'h:i A',
+			minTime: typeof this.minTime !== undefined ? this.minTime : false,
+			maxTime: typeof this.maxTime !== undefined ? this.maxTime : false,
+		}
+	},
+	mounted: function () {
+		let opt= {
+			editable: false,
+			format: 'HH:i',
+			formatSubmit: 'HHi',
+			hiddenName: true,
+			onSet: this.update,
+			interval: this.interval,
+		};
+		if (this.minTime) {
+			opt.min= new Date(this.minTime);
+		}
+		if (this.maxTime) {
+			opt.max= new Date(this.maxTime);
+		}
+		this.input_el = $(this.$el).pickatime(opt);
+		this.picker = this.input_el.pickatime('picker')
+	},
+	methods: {
+		update: function(context) {
+			this.$emit('input', context.select);
+		}
+	},
+	watch: {
+		minDate: function(newVal, oldVal) {
+			if (newVal)
+				newVal = new Date(newVal);
+			this.picker.set('min', newVal);
+		},
+		maxDate: function(newVal, oldVal) {
+			if (newVal)
+				newVal = new Date(newVal);
+			this.picker.set('max', newVal);
+		}
+	}
+});

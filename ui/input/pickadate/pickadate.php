@@ -13,6 +13,7 @@ class Pickadate extends Component {
 		$assets = \Assets::instance();
 		$assets->addCss("src/themes/classic.css",5,'head','pickadate');
 		$assets->addCss("src/themes/classic.date.css",5,'head','pickadate');
+		$assets->addCss("src/themes/classic.time.css",5,'head','pickadate');
 
 		$assets->addJs("src/picker.js",5,'footer','pickadate');
 		$assets->addJs("src/picker.date.js",5,'footer','pickadate');
