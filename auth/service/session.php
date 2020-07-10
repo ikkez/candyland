@@ -77,9 +77,8 @@ class Session extends \Sugar\Component implements AuthServiceInterface {
 	 * regenerate session, keep alive
 	 */
 	function refresh() {
-		$success = session_regenerate_id();
-		if ($success)
-			$this->fw->set('SESSION'.$this->prefix.'.expiration', $this->fw->get('JAR.expire'));
+		$success = (session_status() == PHP_SESSION_ACTIVE) && session_regenerate_id();
+		$this->fw->set('SESSION'.$this->prefix.'.expiration', $this->fw->get('JAR.expire'));
 		return $success;
 	}
 
