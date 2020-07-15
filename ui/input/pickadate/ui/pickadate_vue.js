@@ -23,12 +23,13 @@ Vue.component('pickadate', {
 		}
 	},
 	mounted: function () {
-		let opt= {
+		let opt = {
 			editable: false,
 			format: 'dd.mm.yyyy',
 			formatSubmit: 'yyyy-mm-dd',
 			hiddenName: true,
 			onSet: this.update,
+			onClose: this.blur,
 			selectMonths: this.selectMonths,
 			selectYears: this.selectYears,
 		};
@@ -54,8 +55,14 @@ Vue.component('pickadate', {
 			return [year, month, day].join('-');
 		},
 		update: function(context) {
-			let date = new Date(context.select);
-			this.$emit('input', this.formatDate(date));
+			if (context.select) {
+				let date = new Date(context.select);
+				this.$emit('input', this.formatDate(date));
+			} else
+				this.$emit('input', '');
+		},
+		blur: function() {
+			this.$emit('blur');
 		}
 	},
 	watch: {
@@ -96,12 +103,13 @@ Vue.component('pickatime', {
 		}
 	},
 	mounted: function () {
-		let opt= {
+		let opt = {
 			editable: false,
 			format: 'HH:i',
 			formatSubmit: 'HHi',
 			hiddenName: true,
 			onSet: this.update,
+			onClose: this.blur,
 			interval: this.interval,
 		};
 		if (this.minTime) {
@@ -116,6 +124,9 @@ Vue.component('pickatime', {
 	methods: {
 		update: function(context) {
 			this.$emit('input', context.select);
+		},
+		blur: function() {
+			this.$emit('blur');
 		}
 	},
 	watch: {
