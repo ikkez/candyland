@@ -56,7 +56,10 @@ Vue.component('pickadate', {
 		},
 		update: function(context) {
 			if (context.select) {
-				let date = new Date(context.select);
+				let val = context.select;
+				if (typeof val === "object")
+					val = val.pick;
+				let date = new Date(val);
 				this.$emit('input', this.formatDate(date));
 			} else
 				this.$emit('input', '');
