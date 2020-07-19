@@ -40,7 +40,7 @@ Vue.component('pickadate', {
 			opt.max= new Date(this.maxDate);
 		}
 		this.input_el = $(this.$el).pickadate(opt);
-		this.picker = this.input_el.pickadate('picker')
+		this.picker = this.input_el.pickadate('picker');
 	},
 	methods: {
 		formatDate: function(date) {
@@ -78,6 +78,11 @@ Vue.component('pickadate', {
 			if (newVal)
 				newVal = new Date(newVal);
 			this.picker.set('max', newVal);
+		},
+		value: function (newVal, oldVal) {
+			if (newVal && typeof oldVal === "undefined") {
+				this.picker.set('select', newVal);
+			}
 		}
 	}
 });
