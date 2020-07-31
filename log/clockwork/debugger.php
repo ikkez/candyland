@@ -25,6 +25,7 @@ class Debugger extends \Prefab {
 			'api'                  => $this->fw->BASE.'/__clockwork/',
 			'register_helpers'     => true,
 			'enable'               => true,
+			'allowed_hosts'        => '',
 			'check_cookie'         => 'XDEBUG_SESSION',
 			'storage'              => 'files', // sql
 			'storage_files_path'   => $this->fw->get('LOGS').'clockwork/',
@@ -32,8 +33,17 @@ class Debugger extends \Prefab {
 			'storage_expiration'   => 60*24*7, // minutes
 			'serialization_depth'  => 3,
 			'auth_password'        => '',
+			'db'                   => [
+				'storage_key' => 'sql'
+			],
 		];
 		$options = array_replace_recursive($options,$this->config);
+
+		if ($options['allowed_hosts'] && !is_array($options['allowed_hosts']))
+			$options['allowed_hosts'] = [$options['allowed_hosts']];
+
+		if ($options['allowed_hosts'] && !in_array($this->fw->HOST, $options['allowed_hosts']))
+			return;
 
 		if (!empty($options['check_cookie']) && !$this->fw->exists('COOKIE.'.$options['check_cookie'])) {
 			return;
@@ -152,7 +162,7 @@ class Debugger extends \Prefab {
 				});
 			}
 
-			$this->_parent->on('afterRun',function() use ($clock)  {
+			$this->_parent->on('afterRun',function() use ($clock, $options)  {
 
 				$comp = clock()->userData('components')->title('Components');
 				$comps = [];
@@ -168,7 +178,7 @@ class Debugger extends \Prefab {
 
 				/** @var \Base $f3 */
 				$f3=\Base::instance();
-				$obj=Storage::instance()->get('sql');
+				$obj=Storage::instance()->get($options['db']['storage_key']);
 				if ($obj instanceof SQL) {
 					$logs=$obj->log();
 					$logs=explode("\n",$logs);
