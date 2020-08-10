@@ -13,10 +13,8 @@ class Editor extends Component {
 		$this->fw->concat('UI',';'.$this->getComponentPath().'ui/');
 
 		if ($this->provider->isEnabled() && $this->fw->exists('GET.ct_editor',$pid)) {
-			//\Assets::instance()->addJs('src/content-tools.min.js');
 			\Assets::instance()->addJs('src/content-tools.js');
 			\Assets::instance()->addJs('src/content-flow.js');
-//			\Assets::instance()->addCss('src/content-tools.min.css');
 			\Assets::instance()->addCss('src/content-flow.min.css');
 			\Assets::instance()->addJs('js/editor.js');
 			\Assets::instance()->addCss('css/ct_content.css');

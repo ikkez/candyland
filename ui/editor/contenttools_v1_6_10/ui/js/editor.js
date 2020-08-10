@@ -40,6 +40,7 @@ window.addEventListener('load', function() {
 
 	basePath = document.getElementsByTagName('base')[0].getAttribute('href');
 
+	var lang = document.documentElement.lang;
 
 	// var MockAPI, MockRequest,
 	// 	__hasProp = {}.hasOwnProperty,
@@ -759,7 +760,7 @@ window.addEventListener('load', function() {
 
 	})(ContentTools.Tool);
 
-	ContentEdit.DEFAULT_MAX_ELEMENT_WIDTH = 1200;
+	ContentTools.DEFAULT_MAX_ELEMENT_WIDTH = 1200;
 
 	// ContentTools.DEFAULT_TOOLS[2] = [
 	// 	'image',
@@ -1015,78 +1016,139 @@ window.addEventListener('load', function() {
 	ContentTools.DEFAULT_TOOLS[1] = ['heading', 'subheading', 'subsubheading', 'paragraph', 'unordered-list', 'ordered-list', 'table', 'indent', 'unindent', 'line-break'];
 	// ContentTools.INLINE_TAGS = ['address', 'b', 'code', 'del', 'em', 'i', 'ins', 'span', 'strong', 'sup', 'u'];
 
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Normal', 'h1-regular', ['h1'])
-	]);
+	let ll = {
+		en: {
+			headline_default: 'Normal',
+			headline_bullet: 'Bullet',
+			headline_divider: 'Divider',
+			headline_light: 'Light',
+			card_title: 'Card title',
+			a_download: 'Download',
+			p_lead: 'Lead text',
+			p_meta: 'Meta text',
+			p_uppercase: 'Uppercase',
+			table: 'Table',
+			table_divider: 'Divider',
+			table_hover: 'Hover rows',
+			table_striped: 'Striped rows',
+			table_middle: 'Center middle',
+			table_responsive: 'Break responsive',
+			table_shrink: 'Shrink to fit content',
+			table_nowrap: 'Text nowrap',
+			table_expand: 'Expand width',
+			table_w_small: 'Small width',
+			table_w_medium: 'Medium width',
+			table_w_large: 'Large width',
+			iframe_responsive_w: 'responsive Width',
+			iframe_responsive_h: 'responsive Height',
+			iframe_preserver_w: 'Preserve width',
+		},
+		de: {
+			headline_default: 'Normal',
+			headline_bullet: 'Bullet',
+			headline_divider: 'Trenner',
+			headline_light: 'Leicht',
+			card_title: 'Titel',
+			a_download: 'Download',
+			p_lead: 'Hervorheben',
+			p_meta: 'Abschwächen',
+			p_uppercase: 'Großschreibung',
+			table: 'Tabelle',
+			table_divider: 'Trenner',
+			table_hover: 'Zeilen hervorheben',
+			table_striped: 'gestreifte Zeilen',
+			table_middle: 'mittig zentrieren',
+			table_responsive: 'responsiv umbrechen',
+			table_shrink: 'auf Inhalt schrumpfen',
+			table_nowrap: 'Text nicht automatisch umbrechen',
+			table_expand: 'Breite ausdehnen',
+			table_w_small: 'Breite schmal',
+			table_w_medium: 'Breite mittel',
+			table_w_large: 'Breite groß',
+			iframe_responsive_w: 'responsive Breite',
+			iframe_responsive_h: 'responsive Höhe',
+			iframe_preserver_w: 'Breite beibehalten',
+		},
+	};
 
-	// ContentTools.StylePalette.add([
-	// 	new ContentTools.Style('Button Base', 'uk-button', ['a'])
-	// ]);
-	// ContentTools.StylePalette.add([
-	// 	new ContentTools.Style('Button Blau', 'uk-button-primary', ['a'])
-	// ]);
-
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Leicht', 'uk-card-title', ['h2'])
-	]);
-
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Hervorheben', 'uk-text-lead', ['p'])
-	]);
-
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Abschwächen', 'uk-text-meta', ['p'])
-	]);
-
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Tabelle', 'uk-table', ['table'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Trenner', 'uk-table-divider', ['table'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Zeilen hervorheben', 'uk-table-hover', ['table'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('gestreifte Zeilen', 'uk-table-striped', ['table'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('mittig zentrieren', 'uk-table-middle', ['table'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('responsiv umbrechen', 'uk-table-responsive', ['table'])
-	]);
-
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('auf Inhalt schrumpfen', 'uk-table-shrink', ['th'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Text nicht automatisch umbrechen', 'uk-text-nowrap', ['td'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Breite ausdehnen', 'uk-table-expand', ['th'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Breite schmal', 'uk-width-small', ['th'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Breite mittel', 'uk-width-medium', ['th'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('Breite groß', 'uk-width-large', ['th'])
-	]);
-	ContentTools.StylePalette.add([
-		new ContentTools.Style('nicht automatisch umbrechen', 'uk-text-nowrap', ['th'])
-	]);
+	let dict = ll[lang];
 
 	ContentTools.StylePalette.add([
-		new ContentTools.Style('responsive Breite', 'uk-responsive-width', ['iframe'])
+		new ContentTools.Style(dict.headline_default, 'h1-regular', ['h1'])
 	]);
 	ContentTools.StylePalette.add([
-		new ContentTools.Style('responsive Höhe', 'uk-responsive-height', ['iframe'])
+		new ContentTools.Style(dict.headline_bullet, 'uk-heading-bullet', ['h1','h2','h3'])
 	]);
 	ContentTools.StylePalette.add([
-		new ContentTools.Style('Breite beibehalten', 'uk-preserve-width', ['iframe'])
+		new ContentTools.Style(dict.headline_divider, 'uk-heading-divider', ['h1','h2'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.card_title, 'uk-card-title', ['h2','h3'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.headline_light, 'uk-card-title', ['h2'])
+	]);
+
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.a_download, 'download', ['a'])
+	]);
+
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.p_lead, 'uk-text-lead', ['p'])
+	]);
+
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.p_meta, 'uk-text-meta', ['p'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.p_uppercase, 'uk-text-uppercase', ['p'])
+	]);
+
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table, 'uk-table', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_divider, 'uk-table-divider', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_hover, 'uk-table-hover', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_striped, 'uk-table-striped', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_middle, 'uk-table-middle', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_responsive, 'uk-table-responsive', ['table'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_shrink, 'uk-table-shrink', ['th'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_nowrap, 'uk-text-nowrap', ['td','th'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_expand, 'uk-table-expand', ['th'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_w_small, 'uk-width-small', ['th'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_w_medium, 'uk-width-medium', ['th'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.table_w_large, 'uk-width-large', ['th'])
+	]);
+
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.iframe_responsive_w, 'uk-responsive-width', ['iframe'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.iframe_responsive_h, 'uk-responsive-height', ['iframe'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.iframe_preserver_w, 'uk-preserve-width', ['iframe'])
 	]);
 
 	tagNames = ContentEdit.TagNames.get();
@@ -1098,10 +1160,9 @@ window.addEventListener('load', function() {
 	var flowsQuery, api;
 
 	editor.init('[data-region], [data-fixture]', 'data-name');
-	flowMgr.init(flowsQuery = '[data-cf-flow]', api = new ContentFlow.BaseAPI(basePath+'content-api/'+pageId+'/'));
+	flowMgr.init(flowsQuery = '[data-cf-flow]', api = new ContentFlow.BaseAPI(basePath+'config-api/content/'+pageId+'/'));
 
 	// flowMgr.init(flowsQuery = '[data-cf-flow]', api = new MockAPI(basePath));
-
 	editor.addEventListener('start', function (ev) {
 		window.dispatchEvent(createEvent('editor_start',false,true));
 	});
@@ -1145,14 +1206,12 @@ window.addEventListener('load', function() {
 
 		xhr = new XMLHttpRequest();
 		xhr.addEventListener('readystatechange', onStateChange);
-		xhr.open('POST', 'content-api/'+pageId+'/save');
+		xhr.open('POST', 'config-api/content/'+pageId+'/save');
 		xhr.send(payload);
 	});
 
-
 	// load language
 	xhr = new XMLHttpRequest();
-	var lang = document.documentElement.lang;
 	xhr.open('GET', 'ext/sugar/ui/editor/contenttools_v1_6_10/ui/lib/ct/translations/'+lang+'.json', true);
 	function onStateChange (ev) {
 		var translations;

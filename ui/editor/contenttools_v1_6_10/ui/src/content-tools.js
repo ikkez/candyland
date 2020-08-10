@@ -5511,10 +5511,36 @@
 
     TableCellText.prototype._keyReturn = function(ev) {
       ev.preventDefault();
-      return this._keyTab({
-        'shiftKey': false,
-        'preventDefault': function() {}
-      });
+      if (ev.shiftKey) {
+        var cell, child, grandParent, newCell, newCellText, row, section, _i, _len, _ref;
+        cell = this.parent();
+        if (!this.can('spawn')) {
+          return;
+        }
+        grandParent = cell.parent().parent();
+        if (grandParent.tagName() === 'tbody') {
+          row = new ContentEdit.TableRow();
+          _ref = cell.parent().children;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            child = _ref[_i];
+            newCell = new ContentEdit.TableCell(child.tagName(), child._attributes);
+            newCellText = new ContentEdit.TableCellText('');
+            newCell.attach(newCellText);
+            row.attach(newCell);
+          }
+          section = this.closest(function (node) {
+            return node.type() === 'TableRow';
+          });
+          section.parent().attach(row, grandParent.children.indexOf(section));
+          return row.children[0].tableCellText().focus();
+        } else {
+          return this.nextContent().focus();
+        }
+      } else
+        return this._keyTab({
+          'shiftKey': false,
+          'preventDefault': function() {}
+        });
     };
 
     TableCellText.prototype._keyTab = function(ev) {
