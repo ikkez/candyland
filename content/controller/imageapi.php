@@ -70,19 +70,26 @@ class ImageAPI extends Component {
 			if ($files) {
 				$files = array_keys($files);
 
-				$path = $files[0];
-				$file = pathinfo($path);
+
+				$filepath = $files[0];
+
+				// move file to record dir
+				$file = pathinfo($filepath);
 				$new_path = $file['basename'];
-				$this->files->load('uploads/'.$file['basename']);
-				$this->files->move($new_path);
+				$this->files->load($new_path);
+				$this->files->setContent($this->fw->read($filepath));
+				// update reference path and save as new
 				$this->files->file=$new_path;
+				$this->files->title=$file['basename'];
 				$this->files->save();
+				@unlink($filepath);
+				$filepath = $this->files->getPath();
+
 				$sk=$this->files->filesystem()->getStorageKey();
-				$spath=str_replace('local:','',$sk);
-				$img = new \Image($new_path,false,$spath);
+				$img = new \Image($filepath,false);
 				$this->view->set('file',[
-					'name'=>basename($new_path),
-					'path'=>$spath.$new_path,
+					'name'=>$file['basename'],
+					'path'=>$filepath,
 					'width'=>$img->width(),
 					'height'=>$img->height()
 				]);
