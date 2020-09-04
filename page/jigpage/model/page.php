@@ -2,46 +2,54 @@
 
 namespace Sugar\Page\JigPage\Model;
 
-use DB\SQL\Schema;
+use Validation\Traits\CortexTrait;
 
 class Page extends \Sugar\Model\Base {
+
+	use CortexTrait;
 
 	protected $table='pages';
 
 	protected $fieldConf = [
 		'title' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256,
+			'validate' => 'required',
 		],
 		'slug' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256,
+			'validate' => 'required',
 		],
 		'alias' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256,
+			'validate' => 'required',
 		],
 		'type' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256,
+			'validate' => 'required',
 		],
 		'layout' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256,
+			'validate' => 'required',
 		],
 		'template' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256
 		],
 		'controller' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256
 		],
 		'description' => [
-			'type' => Schema::DT_VARCHAR256
+			'type' => self::DT_VARCHAR256
 		],
 		'deleted_at' => [
-			'type' => Schema::DT_TIMESTAMP,
+			'type' => self::DT_TIMESTAMP,
 			'default' => NULL
 		],
 		'lang' => [
-			'type' => Schema::DT_VARCHAR128,
+			'type' => self::DT_VARCHAR128,
+			'default' => 'en',
 		],
 		'cid' => array(
-			'type' => Schema::DT_INT,
+			'type' => self::DT_INT,
 		),
 	];
 
