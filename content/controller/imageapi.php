@@ -33,9 +33,9 @@ class ImageAPI extends Component {
 				$img = new \Image($item['path']);
 				$out[] = [
 					'name'=>$filename,
-					'path'=>$item['path'],
+					'path'=>$this->files->getPublicPath($item['basename']),
 					'width'=>$img->width(),
-					'height'=>$img->height()
+					'height'=>$img->height(),
 				];
 			}
 		}

@@ -31,6 +31,15 @@ class FileReference extends \FAL {
 		return $exp[1].$this->get('file');
 	}
 
+	public function getStoragePath() {
+		$exp = explode(':',$this->fs->getStorageKey(),2);
+		return $exp[1];
+	}
+
+	public function getPublicPath($path='') {
+		return ($this->config['public_path'] ?: '').$path;
+	}
+
 	public function filesystem() {
 		return $this->fs;
 	}
