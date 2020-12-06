@@ -14,7 +14,7 @@ class PDF extends Component {
 	 * @param $url
 	 * @param $filename
 	 */
-	function urlToPdf($url,$filename) {
+	function urlToPdf($url,$filename, $send=TRUE) {
 		$snappy = new \Knp\Snappy\Pdf($this->binary_path);
 //		$cacheDir = $this->fw->fixslashes($this->fw->ROOT.'/'.$this->fw->TEMP);
 //		$snappy->setOption('cache-dir',$cacheDir);
@@ -35,11 +35,16 @@ class PDF extends Component {
 		}
 
 		if ($out) {
-			header('Content-Type: application/pdf');
-			if ($this->config['download_attachment'])
-				header('Content-Disposition: attachment; filename="'.$filename.'"');
-			echo $out;
+			if ($send) {
+				header('Content-Type: application/pdf');
+				if ($this->config['download_attachment'])
+					header('Content-Disposition: attachment; filename="'.$filename.'"');
+				echo $out;
+			} else {
+				return $out;
+			}
 		}
 	}
+
 
 }
