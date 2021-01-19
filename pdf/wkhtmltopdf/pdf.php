@@ -7,6 +7,7 @@ use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 class PDF extends Component {
 
+	/** @var string */
 	protected $binary_path;
 
 	/**
@@ -16,33 +17,50 @@ class PDF extends Component {
 	 */
 	function urlToPdf($url,$filename, $send=TRUE) {
 		$snappy = new \Knp\Snappy\Pdf($this->binary_path);
-//		$cacheDir = $this->fw->fixslashes($this->fw->ROOT.'/'.$this->fw->TEMP);
-//		$snappy->setOption('cache-dir',$cacheDir);
-
-//		$snappy->setTimeout(30);
 		$snappy->setOption('encoding',"utf-8");
-//		$snappy->setOption('lowquality',FALSE);
 
 		try {
 //			if ($this->fw->exists('COOKIE',$cookie)) {
 //				$snappy->setOption('cookie', $cookie);
 //			}
 			$out = @$snappy->getOutput($url);
-		} /* catch (ProcessTimedOutException $e) {
-			// do nothing
-		} */ catch (\Exception $e) {
+			if ($out) {
+				if ($send) {
+					header('Content-Type: application/pdf');
+					if ($this->config['download_attachment'])
+						header('Content-Disposition: attachment; filename="'.$filename.'"');
+					echo $out;
+				} else {
+					return $out;
+				}
+			}
+		} catch (\Exception $e) {
 			\Base::instance()->error($e->getCode(),$e->getMessage(),$e->getTrace());
 		}
+	}
 
-		if ($out) {
-			if ($send) {
-				header('Content-Type: application/pdf');
-				if ($this->config['download_attachment'])
-					header('Content-Disposition: attachment; filename="'.$filename.'"');
-				echo $out;
-			} else {
-				return $out;
+	/**
+	 * convert html data to PDF and send to client
+	 * @param $htmlData
+	 * @param $filename
+	 */
+	function htmlToPdf($htmlData, $filename, $send=TRUE) {
+		$snappy = new \Knp\Snappy\Pdf($this->binary_path);
+		$snappy->setOption('encoding',"utf-8");
+		try {
+			$out = @$snappy->getOutputFromHtml($htmlData);
+			if ($out) {
+				if ($send) {
+					header('Content-Type: application/pdf');
+					if ($this->config['download_attachment'])
+						header('Content-Disposition: attachment; filename="'.$filename.'"');
+					echo $out;
+				} else {
+					return $out;
+				}
 			}
+		} catch (\Exception $e) {
+			\Base::instance()->error($e->getCode(),$e->getMessage(),$e->getTrace());
 		}
 	}
 
