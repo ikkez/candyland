@@ -19,7 +19,7 @@ class Page extends Component {
 	function loadRoutes(RouteHandler $routehandle) {
 
 		$contentPages = $this->page->find();
-		foreach ($contentPages as $page) {
+		foreach ($contentPages?:[] as $page) {
 			if (isset($this->fw['page']['types'][$page->type]))
 				$routehandle->route('GET|POST @'.$page->alias.': /'.$page->slug,
 					$this->fw['page']['types'][$page->type]['ctrl']);
