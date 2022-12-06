@@ -7,6 +7,7 @@ class FavIconTag extends \Template\TagHandler {
 
 	protected $options = [
 		'temp_dir' => 'img/',
+		'public_path' => '',
 		'formats' => [
 			'favicon' => [
 				'tag' => '<link rel="icon" type="image/png" href="{0}" sizes="{1}" />',
@@ -68,7 +69,11 @@ class FavIconTag extends \Template\TagHandler {
 						$size=[$size,$size];
 					$opt['width']=$size[0];
 					$opt['height']=$size[1];
-					$icon_path = $this->resize($path,$opt);
+					$filename = $this->resize($path,$opt);
+					if (!empty($this->options['public_path']))
+						$icon_path = $this->options['public_path'].$filename;
+					else
+						$icon_path = $this->options['temp_dir'].$filename;
 					$out.= $this->f3->format($conf['tag'],$icon_path,implode('x',$size))."\n";
 				}
 			}
@@ -80,7 +85,7 @@ class FavIconTag extends \Template\TagHandler {
 	 * on demand image resize
 	 * @param $path
 	 * @param $opt
-	 * @return string
+	 * @return string filename
 	 */
 	function resize($path,$opt) {
 		$hash = $this->f3->hash($path.$this->f3->serialize($opt));
@@ -111,6 +116,6 @@ class FavIconTag extends \Template\TagHandler {
 					break;
 				}
 		}
-		return $dst_path.$new_file_name;
+		return $new_file_name;
 	}
 }

@@ -22,9 +22,7 @@ class FavIconConverter  extends Component {
 		$engine=$this->tmpl->engine();
 
 		if ($engine instanceof \Template) {
-			FavIconTag::init('favicon',$engine,[
-				'temp_dir' => 'ui/favicon/',
-			]);
+			FavIconTag::init('favicon',$engine,$this->config);
 		}
 
 	}

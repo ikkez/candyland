@@ -4,6 +4,20 @@ namespace Sugar\Page\JigPage\Model;
 
 use Validation\Traits\CortexTrait;
 
+/**
+ * @property string title
+ * @property string slug
+ * @property string alias
+ * @property string type
+ * @property string layout
+ * @property string template
+ * @property string controller
+ * @property string description
+ * @property string deleted_at
+ * @property string lang
+ * @property string cid
+ * @property bool enable
+ */
 class Page extends \Sugar\Model\Base {
 
 	use CortexTrait;
@@ -17,11 +31,11 @@ class Page extends \Sugar\Model\Base {
 		],
 		'slug' => [
 			'type' => self::DT_VARCHAR256,
-			'validate' => 'required',
+			'validate' => 'required|unique',
 		],
 		'alias' => [
 			'type' => self::DT_VARCHAR256,
-			'validate' => 'required',
+			'validate' => 'required|unique',
 		],
 		'type' => [
 			'type' => self::DT_VARCHAR256,
@@ -51,6 +65,10 @@ class Page extends \Sugar\Model\Base {
 		'cid' => array(
 			'type' => self::DT_INT,
 		),
+        'enable' => array(
+            'type' => self::DT_BOOL,
+            'default' => false,
+        ),
 	];
 
 	function loadByAlias($name) {

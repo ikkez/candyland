@@ -1,0 +1,11 @@
+@import "variables.scss";
+
+// default variables and available mixins.
+@import "{{@uikit_path}}scss/variables-theme.scss";
+@import "{{@uikit_path}}scss/mixins-theme.scss";
+
+// custom mixin overwrites.
+//@mixin hook-card() { color: #000; }
+
+// Import UIkit.
+@import "{{@uikit_path}}scss/uikit-theme.scss";

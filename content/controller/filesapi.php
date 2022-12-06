@@ -26,15 +26,13 @@ class FilesAPI extends Component {
 	 * list all images
 	 */
 	function collection(\Base $f3, $args) {
-		$files = $this->files->filesystem()->listDir('/');
+		$files = $this->files->filesystem()->listDir('/','/^((?!^\.).)*$/');
 		$out = [];
 		foreach ($files as $filename=>$item) {
-			if (in_array($filename,['.DS_Store']))
-				continue;
-			if ($item['type'] == 'file' && !in_array($item['extension'],['jpg','png'])) {
+			if ($item['type'] == 'file') {
 				$out[] = [
 					'name'=>$filename,
-					'path'=>$item['path'],
+					'path'=>$this->files->getPublicPath($item['basename']),
 					'size'=>round($item['size'] / 1024),
 				];
 			}
@@ -69,20 +67,24 @@ class FilesAPI extends Component {
 			$this->view->set('status','success');
 			if ($files) {
 				$files = array_keys($files);
+				$filepath = $files[0];
 
-				$path = $files[0];
-				$file = pathinfo($path);
+				// move file to record dir
+				$file = pathinfo($filepath);
 				$new_path = $file['basename'];
-				$this->files->load('uploads/'.$file['basename']);
-				$this->files->move($new_path);
+				$this->files->load($new_path);
+				$this->files->setContent($this->fw->read($filepath));
+				// update reference path and save as new
 				$this->files->file=$new_path;
+				$this->files->title=$file['basename'];
 				$this->files->save();
-				$sk=$this->files->filesystem()->getStorageKey();
-				$spath=str_replace('local:','',$sk);
+				@unlink($filepath);
+				$filepath = $this->files->getPath();
+
 				$this->view->set('file',[
 					'name'=>basename($new_path),
-					'path'=>$spath.$new_path,
-					'size'=>round(filesize($spath.$new_path) / 1024),
+					'path'=>$this->files->getPublicPath($file['basename']),
+					'size'=>round(filesize($filepath) / 1024),
 				]);
 			}
 		}

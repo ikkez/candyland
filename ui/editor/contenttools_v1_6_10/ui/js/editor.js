@@ -1023,7 +1023,7 @@ window.addEventListener('load', function() {
 			headline_divider: 'Divider',
 			headline_light: 'Light',
 			card_title: 'Card title',
-			a_download: 'Download',
+			a_action_btn: 'Action-Button',
 			p_lead: 'Lead text',
 			p_meta: 'Meta text',
 			p_uppercase: 'Uppercase',
@@ -1049,10 +1049,12 @@ window.addEventListener('load', function() {
 			headline_divider: 'Trenner',
 			headline_light: 'Leicht',
 			card_title: 'Titel',
-			a_download: 'Download',
+			a_action_btn: 'Action-Button',
 			p_lead: 'Hervorheben',
 			p_meta: 'Abschwächen',
 			p_uppercase: 'Großschreibung',
+			p_text_mark_primary: 'Primär markiert',
+			p_text_mark_secondary: 'Sekundär markiert',
 			table: 'Tabelle',
 			table_divider: 'Trenner',
 			table_hover: 'Zeilen hervorheben',
@@ -1090,7 +1092,7 @@ window.addEventListener('load', function() {
 	]);
 
 	ContentTools.StylePalette.add([
-		new ContentTools.Style(dict.a_download, 'download', ['a'])
+		new ContentTools.Style(dict.a_action_btn, 'action-button', ['a'])
 	]);
 
 	ContentTools.StylePalette.add([
@@ -1102,6 +1104,12 @@ window.addEventListener('load', function() {
 	]);
 	ContentTools.StylePalette.add([
 		new ContentTools.Style(dict.p_uppercase, 'uk-text-uppercase', ['p'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.p_text_mark_primary, 'text-mark-primary', ['p'])
+	]);
+	ContentTools.StylePalette.add([
+		new ContentTools.Style(dict.p_text_mark_secondary, 'text-mark-secondary', ['p'])
 	]);
 
 	ContentTools.StylePalette.add([
@@ -1157,11 +1165,18 @@ window.addEventListener('load', function() {
 
 	var editor = ContentTools.EditorApp.get();
 	var flowMgr = ContentFlow.FlowMgr.get();
-	var flowsQuery, api;
+	var flowsQuery;
 
 	editor.init('[data-region], [data-fixture]', 'data-name');
-	flowMgr.init(flowsQuery = '[data-cf-flow]', api = new ContentFlow.BaseAPI(basePath+'config-api/content/'+pageId+'/'));
 
+	let api = new ContentFlow.BaseAPI(basePath+'config-api/content/'+pageId+'/');
+
+	flowMgr.init(flowsQuery = '[data-cf-flow]', api);
+	flowMgr.addEventListener('change', function() {
+		// send event to parent frame
+		var event = new CustomEvent('content-saved')
+		window.parent.document.dispatchEvent(event);
+	})
 	// flowMgr.init(flowsQuery = '[data-cf-flow]', api = new MockAPI(basePath));
 	editor.addEventListener('start', function (ev) {
 		window.dispatchEvent(createEvent('editor_start',false,true));
@@ -1197,6 +1212,10 @@ window.addEventListener('load', function() {
 				if (ev.target.status == '200') {
 					// Save was successful, notify the user with a flash
 					new ContentTools.FlashUI('ok');
+
+					// send event to parent frame
+					var event = new CustomEvent('content-saved')
+					window.parent.document.dispatchEvent(event)
 				} else {
 					// Save failed, notify the user with a flash
 					new ContentTools.FlashUI('no');

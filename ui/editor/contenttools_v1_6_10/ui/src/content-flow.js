@@ -228,6 +228,7 @@
           domFlow = _ref[_i];
           flows.push(new ContentFlow.FlowModel(ContentFlow.getFlowIdFromDOMElement(domFlow), ContentFlow.getFlowLabelFromDOMElement(domFlow)));
         }
+        this.dispatchEvent(this.createEvent('change'))
         return this._flows.flows(flows);
       }
     };
@@ -730,7 +731,7 @@
         domOption = document.createElement('option');
         domOption.setAttribute('value', choice[0]);
         domOption.textContent = ContentEdit._(choice[1]);
-        if (this._initialValue === choice[0]) {
+        if (this._initialValue == choice[0]) {
           domOption.setAttribute('selected', true);
         }
         this._domInput.appendChild(domOption);

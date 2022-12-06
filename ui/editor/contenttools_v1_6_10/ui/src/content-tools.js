@@ -4067,7 +4067,7 @@
       this._attributes['src'] = imageURL;
       this._attributes['width'] = width;
       this._attributes['height'] = height;
-      var sizes = this.size();
+      var sizes = this.size(undefined, true);
       this._aspectRatio = sizes[1] / sizes[0];
       this._domElement.style['background-image'] = "url(" + imageURL + ")";
       this._domElement.style.width = "" + sizes[0] + "px";
@@ -4115,12 +4115,14 @@
       this._domElement.setAttribute('class', classes);
       style = this._attributes['style'] ? this._attributes['style'] : '';
       style += "background-image:url('" + this._attributes['src'] + "');";
+      var sizes = this.size(undefined, true);
       if (this._attributes['width']) {
-        style += "width:" + this._attributes['width'] + "px;";
+        style += "width:" + sizes[0] + "px;";
       }
       if (this._attributes['height']) {
-        style += "height:" + this._attributes['height'] + "px;";
+        style += "height:" + sizes[1] + "px;";
       }
+      this.size(sizes);
       this._domElement.setAttribute('style', style);
       return Image.__super__.mount.call(this);
     };
@@ -9784,7 +9786,7 @@
       });
       var a_el = this.getTag(element, selection);
       var anchor = new ContentEdit.Anchor('',a_el._attributes);
-		anchor.setParent(element);
+      anchor.setParent(element);
       dialog = new ContentTools.LinkDialog(this.getAttr('href', element, selection), this.getAttr('target', element, selection), anchor);
       _ref1 = ContentTools.getScrollPosition(), scrollX = _ref1[0], scrollY = _ref1[1];
       dialog.position([rect.left + (rect.width / 2) + scrollX, rect.top + (rect.height / 2) + scrollY]);
@@ -9793,9 +9795,9 @@
         detail = ev.detail();
         applied = true;
         if (element.type() === 'Image') {
-			alignmentClassNames = ['align-center', 'align-left', 'align-right'];
+          alignmentClassNames = ['align-center', 'align-left', 'align-right'];
           if (detail.href) {
-          	element.a = detail;
+            element.a = detail;
             for (_i = 0, _len = alignmentClassNames.length; _i < _len; _i++) {
               className = alignmentClassNames[_i];
               if (element.hasCSSClass(className)) {
@@ -9807,28 +9809,28 @@
           } else {
             linkClasses = [];
             if (element['a']) {
-            	if (element.a['class']) {
-				  linkClasses = element.a['class'].split(' ');
-				}
-				for (_j = 0, _len1 = alignmentClassNames.length; _j < _len1; _j++) {
-				  className = alignmentClassNames[_j];
-				  if (linkClasses.indexOf(className) > -1) {
-					element.addCSSClass(className);
-					break;
-				  }
-				}
-			}
+                if (element.a['class']) {
+                  linkClasses = element.a['class'].split(' ');
+                }
+                for (_j = 0, _len1 = alignmentClassNames.length; _j < _len1; _j++) {
+                  className = alignmentClassNames[_j];
+                  if (linkClasses.indexOf(className) > -1) {
+                    element.addCSSClass(className);
+                    break;
+                  }
+                }
+            }
             element.a = null;
           }
           element.unmount();
           element.mount();
         } else if (element.isFixed() && element.tagName() === 'a') {
           // element.attr('href', detail.href);
-			var name, value;
-			for (name in detail) {
-				value = detail[name];
-				element.attr(name, value);
-			}
+            var name, value;
+            for (name in detail) {
+                value = detail[name];
+                element.attr(name, value);
+            }
         } else {
           element.content = element.content.unformat(from, to, 'a');
           if (detail.href) {

@@ -26,10 +26,10 @@ class ImageAPI extends Component {
 	 * list all images
 	 */
 	function collection(\Base $f3, $args) {
-		$files = $this->files->filesystem()->listDir('/');
+		$files = $this->files->filesystem()->listDir('/','/\.(jpe?g|png|gif)$/i');
 		$out = [];
 		foreach ($files as $filename=>$item) {
-			if ($item['type'] == 'file' && in_array($item['extension'],['jpg','png'])) {
+			if ($item['type'] == 'file') {
 				$img = new \Image($item['path']);
 				$out[] = [
 					'name'=>$filename,
@@ -69,8 +69,6 @@ class ImageAPI extends Component {
 			$this->view->set('status','success');
 			if ($files) {
 				$files = array_keys($files);
-
-
 				$filepath = $files[0];
 
 				// move file to record dir
@@ -85,11 +83,10 @@ class ImageAPI extends Component {
 				@unlink($filepath);
 				$filepath = $this->files->getPath();
 
-				$sk=$this->files->filesystem()->getStorageKey();
 				$img = new \Image($filepath,false);
 				$this->view->set('file',[
 					'name'=>$file['basename'],
-					'path'=>$filepath,
+					'path'=>$this->files->getPublicPath($file['basename']),
 					'width'=>$img->width(),
 					'height'=>$img->height()
 				]);

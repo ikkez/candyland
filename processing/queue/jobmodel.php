@@ -4,6 +4,21 @@ namespace Sugar\Processing\Queue;
 
 use Sugar\Model\Base;
 
+/**
+ * @property string label
+ * @property string handler
+ * @property string job
+ * @property string status
+ * @property string channel
+ * @property int run
+ * @property int retry
+ * @property float performance_ms
+ * @property float memory_mb
+ * @property string exec_at
+ * @property string created_at
+ * @property string updated_at
+ * @property string deleted_at
+ */
 class JobModel extends Base {
 
 	const
@@ -13,6 +28,10 @@ class JobModel extends Base {
 		STATUS_ERROR = 3;
 
 	protected $table = 'queue';
+
+	public function dbEngine() {
+		return $this->db;
+	}
 
 	protected $fieldConf = [
 		'label' => [
@@ -25,8 +44,9 @@ class JobModel extends Base {
 			'type' => self::DT_TEXT,
 		],
 		'status' => [
-			'type' => self::DT_VARCHAR128,
-			'default' => self::STATUS_IDLE
+			'type' => self::DT_TINYINT,
+			'default' => self::STATUS_IDLE,
+			'nullable' => FALSE,
 		],
 		'channel' => [
 			'type' => self::DT_VARCHAR128,
@@ -53,6 +73,9 @@ class JobModel extends Base {
 		'created_at' => [
 			'type' => self::DT_TIMESTAMP,
 			'default'=> self::DF_CURRENT_TIMESTAMP,
+		],
+		'updated_at' => [
+			'type' => self::DT_TIMESTAMP,
 		],
 		'deleted_at' => [
 			'type' => self::DT_TIMESTAMP,

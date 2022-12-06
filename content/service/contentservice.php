@@ -4,14 +4,22 @@ namespace Sugar\Content\Service;
 
 use Sugar\Content\Controller\Snippet;
 use Sugar\Content\Model\Content;
+use Sugar\Service\Factory;
 
 class ContentService {
 
 	/** @var \Sugar\Content\Model\Content */
 	protected $model;
 
-	function __construct(Content $model) {
+    protected array $config;
+
+    /** @var string | int */
+    protected $pageId;
+
+	function __construct(Content $model, $pageId, array $config=[]) {
 		$this->model = $model;
+        $this->config = $config;
+        $this->pageId = $pageId;
 	}
 
 	/**
@@ -37,13 +45,47 @@ class ContentService {
 		return $data;
 	}
 
+    protected function initNewVersion() {
+        $this->model->initNewVersion();
+        if (!empty($this->config['versionHandler'])) {
+            Factory::instance()->call($this->config['versionHandler'], [$this->model, $this->pageId]);
+        }
+    }
+
+    public function publish() {
+        if ($this->model->get('version') === 'master') {
+            return;
+        }
+        // when publishing new master, patch version of existing master
+        $latestMaster = $this->model->findone(['@version = ?', 'master']);
+        if ($latestMaster) {
+            if ($latestMaster->exists('created_at')) {
+                $latestMaster->set('version', $latestMaster->get('created_at'));
+            } else {
+                $latestMaster->set('version', time());
+            }
+            $latestMaster->set('label', 'Old Master');
+            $latestMaster->save();
+        }
+
+        $this->initNewVersion();
+        $this->model->set('version', 'master');
+        $this->model->save();
+        $this->model->commitBackup();
+    }
+
+    public function draft() {
+        $this->model->set('label', 'draft');
+        $this->model->save();
+    }
+
 	/**
 	 * save snippet contents
 	 * @param $snippets_conf
 	 */
 	function saveSnippets($snippets_conf) {
 
-		$this->model->initBackup();
+		$this->initNewVersion();
 
 		foreach($snippets_conf as $ckey => $cval) {
 			$ckey_ex = explode(':',$ckey,2);
@@ -69,7 +111,7 @@ class ContentService {
 	 */
 	function deleteSnippet($cId) {
 		if ($this->model->exists($cId)) {
-			$this->model->initBackup();
+			$this->initNewVersion();
 
 			$this->model->clear($cId);
 
@@ -93,7 +135,7 @@ class ContentService {
 	 */
 	function orderSnippets($flow,$ids) {
 
-		$this->model->initBackup();
+		$this->initNewVersion();
 		$order = [];
 		foreach ($ids as $cId) {
 			if ($this->model->exists($cId)) {
@@ -203,7 +245,7 @@ class ContentService {
 				//				$content->clear($cId);
 				unset($ce['global_id']);
 
-				$global_content->initBackup();
+				$global_content->initNewVersion();
 				$global_content->set($cId,$ce);
 
 				$global_content->save();

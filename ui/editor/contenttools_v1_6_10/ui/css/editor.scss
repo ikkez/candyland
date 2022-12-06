@@ -24,41 +24,8 @@
 @media (max-width: 639px) {
   .align-right {
     float: none;
-    margin-left: 0px;
+    margin-left: 0;
   }
-}
-
-.content-snippet {
-  img {
-    display: block;
-  }
-}
-
-.ce-element--type-image {
-  &.align-left {
-    clear: none;
-    float: left;
-    margin-right: 20px;
-  }
-  &.align-right {
-    clear: none;
-    float: right;
-    margin-left: 20px;
-  }
-}
-
-.ce-element--type-image-fixture {
-  background-size: contain;
-  background-repeat: no-repeat;
-  min-height: 200px;
-}
-
-[data-ce-tag="img-fixture"] img {
-  display: none;
-}
-
-* + .content-snippet {
-  margin-top: 20px;
 }
 
 .cf-flow-mgr {
@@ -92,7 +59,7 @@
 }
 .ct-widget {
   .ct-ignition__button--edit {
-    background-color: #287DA8;
+    background-color: #005E90;
   }
   .ct-toggle__button {
     background-color: #FFA500;
@@ -109,9 +76,9 @@
   right: 40px;
 }
 
-.content-snippet {
-  overflow: hidden;
-}
+//.content-snippet {
+//  overflow: hidden;
+//}
 
 .ce-element--type-image {
   margin-left: 0;
@@ -163,6 +130,29 @@
   .ct-anchored-dialog__page-button::before {
     color: #a4a4a4;
     content: "\e925";
+  }
+
+  .ct-anchored-dialog__settings-button {
+    background: #fff;
+    cursor: pointer;
+    display: inline-block;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    font-family: icon;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    speak: none;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 32px;
+  }
+  .ct-anchored-dialog__settings-button::before {
+    color: #a4a4a4;
+    content: "\e994";
   }
 }
 

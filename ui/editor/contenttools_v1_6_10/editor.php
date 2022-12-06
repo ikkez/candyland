@@ -17,7 +17,7 @@ class Editor extends Component {
 			\Assets::instance()->addJs('src/content-flow.js');
 			\Assets::instance()->addCss('src/content-flow.min.css');
 			\Assets::instance()->addJs('js/editor.js');
-			\Assets::instance()->addCss('css/ct_content.css');
+			\Assets::instance()->addCss('css/ext/ct_content.scss');
 			\Assets::instance()->addCss('css/editor.scss');
 			$this->fw->set('ct_page_id',$pid);
 		}

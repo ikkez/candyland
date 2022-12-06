@@ -6,15 +6,23 @@ use \DB\Jig\Mapper;
 
 class Content extends Mapper {
 
-	/**
-	 * @param string $file_name
-	 * @param \DB\Jig $jig_db
-	 * @param string $version
-	 */
-	function __construct($file_name, \DB\Jig $jig_db, $version='master') {
+    /**
+     * @param string $file_name
+     * @param \DB\Jig $jig_db
+     * @param string|null $version
+     */
+	function __construct($file_name, \DB\Jig $jig_db, ?string $version=null) {
 		parent::__construct($jig_db,$file_name.'.json');
-		$this->load(array('isset(@version) && @version = ?',$version));
+		$this->load(array('isset(@version) && @version = ?',$version ?? 'master'));
 	}
+
+    public function loadLatestVersion() {
+        $versions = $this->versions();
+        if (!empty($versions)) {
+            $latestVersion = $versions[0];
+            $this->load(array('isset(@version) && @version = ?', $latestVersion));
+        }
+    }
 
 	/**
 	 * @return array
@@ -28,10 +36,14 @@ class Content extends Mapper {
 	}
 
 	function cleanUpBackups() {
-		$this->erase(['@version != ? && @version < ?', 'master',
-			time() - (60 * 60 * 24 * 14)]); // 14 days backup
-		$all = $this->find(['@version != ?','master'],['order'=>'version SORT_DESC']);
-		$max = 6;
+		$this->erase(['@version != ? && @version < ? && !isset(@label)', 'master',
+			time() - (60 * 60 * 24 * 7)]); // 7 days backup for history (not draft)
+
+		$this->erase(['@version != ? && @version < ?  && isset(@label)', 'master',
+			time() - (60 * 60 * 24 * 30)]); // 30 days backup for drafts
+
+		$all = $this->find(['@version != ? && !isset(@label)','master'],['order'=>'version SORT_DESC']);
+		$max = 10;
 		$c=count($all);
 		if ($c > $max) {
 			for ($i = $max;$i<=$c;$i++) {
@@ -40,22 +52,20 @@ class Content extends Mapper {
 		}
 	}
 
-	function initBackup() {
+	function initNewVersion($versionName = 'master') {
 		if ($this->valid()) {
 			$this->copyto('model_backup');
 		}
-		$this->set('version','master');
+		$this->set('version', $versionName);
+		$this->clear('label');
 	}
 
 	function commitBackup() {
-		/** @var \Base $f3 */
 		$f3 = \Base::instance();
-
 		if ($f3->exists('model_backup')) {
 			$mapper=clone($this);
 			$mapper->reset();
 			$mapper->copyfrom('model_backup');
-			$mapper->set('version',time());
 			$mapper->save();
 			$f3->clear('model_backup');
 			$this->cleanUpBackups();

@@ -1,0 +1,64 @@
+/* Alignment styles for images, videos and iframes in editable regions */
+
+/* Center (default) */
+[data-region] iframe,
+[data-region] image,
+[data-region] [data-ce-tag=img],
+[data-region] img,
+[data-region] video {
+  clear: both;
+  display: block;
+  /*margin-left: auto;*/
+  /*margin-right: auto;*/
+  max-width: 100%;
+}
+
+/* Left align */
+[data-region] .align-left {
+  clear: initial;
+  float: left;
+  margin-right: 20px;
+}
+
+/* Right align */
+[data-region] .align-right {
+  clear: initial;
+  float: right;
+  margin-left: 20px;
+}
+
+@media (max-width: 639px) {
+  [data-region] .align-right {
+    float: none;
+    margin-left: 0;
+  }
+}
+
+/* Alignment styles for text in editable regions */
+[data-region] .text-center {
+  text-align: center;
+}
+
+[data-region] .text-left {
+  text-align: left;
+}
+
+[data-region] .text-right {
+  text-align: right;
+}
+
+.author {
+  font-style: italic;
+  font-weight: bold;
+}
+
+[data-ce-tag="img-fixture"],
+.ce-element--type-image-fixture {
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 200px;
+}
+
+[data-ce-tag="img-fixture"] img {
+  display: none;
+}

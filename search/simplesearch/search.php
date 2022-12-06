@@ -39,11 +39,15 @@ class Search extends \Sugar\Component {
 		$active_filter = [];
 		$option = null;
 
-		$this->emit('exec',[
-			'active_filter' => &$active_filter,
-			'filter' => &$filter,
-			'option' => &$option,
+		$out = $this->emit('exec',[
+			'active_filter' => $active_filter,
+			'filter' => $filter,
+			'option' => $option,
 		],$this->model);
+
+		$active_filter = $out['active_filter'];
+		$filter = $out['filter'];
+		$option = $out['option'];
 
 		$this->fw->set('active_filter', $active_filter);
 		$this->fw->copy('active_filter','SEARCH.'.$this->persist_key.'.activefilter');

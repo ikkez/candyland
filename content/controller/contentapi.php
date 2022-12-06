@@ -2,7 +2,9 @@
 
 namespace Sugar\Content\Controller;
 
+use Sugar\Content\Model\Content;
 use Sugar\Content\Service\ContentService;
+use Sugar\Service\Factory;
 use Sugar\Storage;
 use Sugar\View\JSON;
 use Sugar\Component;
@@ -26,6 +28,8 @@ class ContentAPI extends Component {
 
 	protected $pid;
 
+	protected ?ContentService $content_service = null;
+
 	function __construct(TemplateInterface $tmpl_renderer) {
 		$this->tmpl_renderer = $tmpl_renderer;
 	}
@@ -35,7 +39,16 @@ class ContentAPI extends Component {
 
 		if (isset($args['id'])) {
 			$this->pid = $args['id'];
-			$this->model = $this->load($args['id']);
+
+            if (!empty($this->config['contentService']['getActiveVersionHandler'])) {
+                $version = Factory::instance()->call($this->config['contentService']['getActiveVersionHandler'], [$this->pid]);
+            } else {
+                $version = 'master';
+            }
+            $this->model = $this->load($this->pid, $version);
+            $config = isset($this->config['contentService']) && is_array($this->config['contentService'])
+                ? $this->config['contentService'] : [];
+            $this->content_service = new ContentService($this->model, $this->pid,$config);
 		}
 		else
 			$f3->error(400,'id parameter required');
@@ -45,15 +58,65 @@ class ContentAPI extends Component {
 		$this->view->dump();
 	}
 
+    public function publish(\Base $f3,$args) {
+        $this->content_service->publish();
+        Factory::instance()->call('ContentHandler.setActivePageVersionForUser', [$args['id'], 'master']);
+    }
 
-	/**
-	 * load page content snippets
-	 * @param $pageId
-	 * @return \Sugar\Content\Model\Content
-	 */
-	function load($pageId) {
+    public function draft(\Base $f3,$args) {
+        $this->content_service->draft();
+//        Factory::instance()->call('ContentHandler.setActivePageVersionForUser', [$args['id'], 'master']);
+    }
+
+    public function loadVersion(\Base $f3,$args) {
+        if (!$f3->devoid('POST.version', $version)) {
+            Factory::instance()->call('ContentHandler.setActivePageVersionForUser', [$args['id'], $version]);
+        }
+    }
+
+    public function getVersions(\Base $f3,$args) {
+        $page_versions = [];
+        $all = $this->model->find(null, ['order'=>'version SORT_DESC']);
+        foreach ($all ?: [] as $pageContents) {
+            if ($pageContents->get('version') !== 'master') {
+                if ($pageContents->exists('created_at')) {
+                    $label = $f3->format('{0,date}, {0,time}', $pageContents->get('created_at')).' - '.$pageContents->get('created_by');
+                } else {
+                    $label = $f3->format('{0,date}, {0,time}', $pageContents->get('version'));
+                }
+                if ($pageContents->exists('label')) {
+                    $label = '['.$pageContents->get('label').'] '.$label;
+                }
+            } else {
+                $label = '→ master';
+                if ($pageContents->exists('created_at')) {
+                    $label.= ' - '.$f3->format('{0,date}, {0,time}', $pageContents->get('created_at'));
+                }
+            }
+            $page_versions[] = [
+                'label' => $label,
+                'tag' => $pageContents->exists('label') ? $pageContents->get('label') : null,
+                'version' => $pageContents->get('version'),
+                'created_at' => $pageContents->exists('created_at') ? $pageContents->get('created_at') : null,
+                'created_by' => $pageContents->exists('created_by') ? $pageContents->get('created_by') : null,
+            ];
+        }
+        if (!empty($this->config['contentService']['getActiveVersionHandler'])) {
+            $version = Factory::instance()->call($this->config['contentService']['getActiveVersionHandler'], [$this->pid]);
+        } else {
+            $version = 'master';
+        }
+        $this->view->set('active_version', $version);
+        $this->view->set('page_versions', $page_versions);
+    }
+
+    /**
+     * load page content snippets
+     */
+	function load(string $pageId, ?string $version = null): Content
+    {
 		$db = Storage::instance()->get($this->db);
-		return new \Sugar\Content\Model\Content($pageId,$db);
+		return new \Sugar\Content\Model\Content($pageId,$db, $version);
 	}
 
 	/**
@@ -72,8 +135,7 @@ class ContentAPI extends Component {
 			'snippets' => []
 		];
 		if ($this->fw->exists('GET.flow',$flow)) {
-			$content_service = new ContentService($this->model);
-			$data['snippets'] = $content_service->getSnippets($flow);
+			$data['snippets'] = $this->content_service->getSnippets($flow);
 		}
 		$this->view->set('payload',$data);
 	}
@@ -86,8 +148,7 @@ class ContentAPI extends Component {
 		if ($this->fw->get('VERB') == 'POST') {
 			$data = $this->fw->get('POST');
 
-			$content_service = new ContentService($this->model);
-			$content_service->saveSnippets($data);
+            $this->content_service->saveSnippets($data);
 
 			$this->emit('saved',['data'=>$data,'pid'=>$this->pid],$this->model);
 
@@ -108,9 +169,7 @@ class ContentAPI extends Component {
 		if ($this->fw->exists('POST.flow',$flow)
 			&& $this->fw->exists('POST.snippet',$cId)) {
 
-			$content_service = new ContentService($this->model);
-
-			if ($content_service->deleteSnippet($cId)) {
+			if ($this->content_service->deleteSnippet($cId)) {
 				$this->fw->status(200);
 			} else {
 				$this->fw->status(404);
@@ -128,8 +187,7 @@ class ContentAPI extends Component {
 		if ($this->fw->exists('POST.flow',$flow)
 			&& $this->fw->exists('POST.snippets',$snippets)) {
 
-			$content_service = new ContentService($this->model);
-			$content_service->orderSnippets($flow,json_decode($snippets));
+            $this->content_service->orderSnippets($flow,json_decode($snippets));
 		}
 	}
 
@@ -155,7 +213,7 @@ class ContentAPI extends Component {
 				//				$content->clear($cId);
 				unset($ce['global_id']);
 
-				$global_content->initBackup();
+				$global_content->initNewVersion();
 				$global_content->set($cId,$ce);
 				$global_content->version = 'master';
 				$global_content->save();
@@ -176,12 +234,10 @@ class ContentAPI extends Component {
 	 */
 	function snippetTypes() {
 
-		$contentService = new ContentService($this->model);
-
 		if (!$this->fw->exists('GET.flow',$flow))
 			$flow = NULL;
 
-		$data = $contentService->snippetTypes($flow);
+		$data = $this->content_service->snippetTypes($flow);
 
 		$this->view->set('payload',['snippet_types'=>$data]);
 	}
@@ -218,10 +274,15 @@ class ContentAPI extends Component {
 		if ($this->fw->exists('POST.flow',$flow)
 			&& $this->fw->exists('POST.snippet_type',$type)) {
 
-			$contentService = new ContentService($this->model);
-			$snippet = $contentService->addSnippet($type,$flow);
+			$snippet = $this->content_service->addSnippet($type,$flow);
 
-			$this->tmpl_renderer->set('content',$this->load($args['id']));
+            if (!empty($this->config['contentService']['getActiveVersionHandler'])) {
+                $version = Factory::instance()->call($this->config['contentService']['getActiveVersionHandler'], [$this->pid]);
+            } else {
+                $version = 'master';
+            }
+
+			$this->tmpl_renderer->set('content',$this->load($this->pid, $version));
 			$this->tmpl_renderer->setTemplate('templates/snippets/'.$type.'.html');
 			$this->tmpl_renderer->set('ce',$snippet);
 			$html = $this->tmpl_renderer->render();
@@ -245,18 +306,22 @@ class ContentAPI extends Component {
 			&& $this->fw->exists('REQUEST.snippet',$cId)) {
 			$out=[];
 
-			$contentService = new ContentService($this->model);
 			if ($this->fw->VERB == 'GET')
-				$out['fields'] = $contentService->getSnippetSettings($cId,$flow);
+				$out['fields'] = $this->content_service->getSnippetSettings($cId,$flow);
 
 			elseif ($this->fw->VERB == 'POST') {
 				$data = $this->fw->get('POST');
 				unset($data['snippet'],$data['flow']);
-				$contentService->setSnippetSettings($cId,$flow,$data);
+                $this->content_service->setSnippetSettings($cId,$flow,$data);
 				$content_element = $this->model->get($cId);
 
+                if (!empty($this->config['contentService']['getActiveVersionHandler'])) {
+                    $version = Factory::instance()->call($this->config['contentService']['getActiveVersionHandler'], [$this->pid]);
+                } else {
+                    $version = 'master';
+                }
 				// render snippet
-				$this->tmpl_renderer->set('content',$this->load($args['id']));
+				$this->tmpl_renderer->set('content',$this->load($this->pid, $version));
 				$this->tmpl_renderer->setTemplate('templates/snippets/'.$content_element['type'].'.html');
 				$this->tmpl_renderer->set('ce',$content_element);
 				$html = $this->tmpl_renderer->render();
@@ -283,8 +348,7 @@ class ContentAPI extends Component {
 		) {
 			if (!$this->fw->exists('POST.label',$label))
 				$label=NULL;
-			$contentService = new ContentService($this->model);
-			$contentService->updateSnippetScope($cId,$flow,$scope,$label);
+            $this->content_service->updateSnippetScope($cId,$flow,$scope,$label);
 		}
 	}
 
