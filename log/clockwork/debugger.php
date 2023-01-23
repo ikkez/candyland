@@ -91,45 +91,46 @@ class Debugger extends \Prefab {
 			// setup tracking requests
 
 			$this->fw->set('QUIET',TRUE);
-			$clock->startEvent('init',"App Init");
+            $baseClock = $clock->getClockwork();
+			$baseClock->event('init')->name('App Init')->begin();
 
-			$this->_parent->on('beforeLoad',function() use ($clock)  {
-				$clock->endEvent('init');
-
-				$clock->startEvent('app_load',"App Load");
+			$this->_parent->on('beforeLoad',function() use ($baseClock)  {
+                $baseClock->event('init')->end();
+                $baseClock->event('app_load',)->name("App Load")->begin();
 			});
-			$this->_parent->on('beforeRun',function() use ($clock)  {
-				$clock->endEvent('app_load');
+			$this->_parent->on('beforeRun',function() use ($baseClock)  {
+                $baseClock->event('app_load')->end();
 				$this->logHive();
 				$this->logAppConfig();
-				$clock->startEvent('app',"App Run");
+                $baseClock->event('app')->name("App Run")->begin();
 			});
 
-			$this->ev->on('route.call',function($args,$context,$ev) use ($clock)  {
-				$clock->startEvent('route.call',$args);
+			$this->ev->on('route.call',function($args,$context,$ev) use ($baseClock)  {
+                $baseClock->event('route.call')->name('route.call.'.$args)->begin();
 			});
 
-			$this->ev->on('component_load',function($args,$context,$ev) use ($clock)  {
-				$clock->startEvent('component.load.'.spl_object_hash($context),
-					'load: '.$args['name']);
+			$this->ev->on('component_load',function($args,$context,$ev) use ($baseClock)  {
+                $baseClock->event('component.load', [
+                    'data' => [$args['name']]
+                ])->name('component.load.'.spl_object_hash($context))->begin();
 			});
 
-			$this->ev->on('component_ready',function($args,$context,$ev) use ($clock)  {
-				$clock->endEvent('component.load.'.spl_object_hash($context));
+			$this->ev->on('component_ready',function($args,$context,$ev) use ($baseClock)  {
+                $baseClock->event('component.load.'.spl_object_hash($context))->end();
 				$this->components[] = [
 					'Name' => $args['name'],
 					'Config' => $args,
 					'Class'=>get_class($context)];
 			});
 
-			$this->ev->on('component_port_open',function($args,$context,$ev) use ($clock)  {
-				$clock->startEvent('component.'.spl_object_hash($context).'.port.'.
-					$args['port'],'port: '.$args['name'].".".$args['port']);
+			$this->ev->on('component_port_open',function($args,$context,$ev) use ($baseClock)  {
+                $baseClock->event('component.'.spl_object_hash($context).'.port.'.$args['port'], [
+                    'data' => ['port' => $args['name'].".".$args['port']],
+                ])->begin();
 			});
 
-			$this->ev->on('component_port_close',function($args,$context,$ev) use ($clock)  {
-				$clock->endEvent('component.'.spl_object_hash($context).'.port.'.
-					$args['port']);
+			$this->ev->on('component_port_close',function($args,$context,$ev) use ($baseClock)  {
+                $baseClock->event('component.'.spl_object_hash($context).'.port.'.$args['port'])->end();
 			});
 
 			$this->ev->on('debug',function($args,$context,$ev) use ($clock)  {
